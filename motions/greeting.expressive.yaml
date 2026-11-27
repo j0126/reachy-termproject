@@ -1,0 +1,98 @@
+# Reachy Café motion 'greeting' (expressive) - HW4 schema reachy-motion/v1, loaded by reachy_cafe/robot/motion_library.py.
+# DRAFT: initial values for the team to design and tune; set draft: false once signed off.
+# Units: angles in degrees (*_deg), head translation in millimetres (*_mm), times in seconds (*_s).
+# Write plain decimal numbers (10, -2.5, 1.0e-3); 010, 0x0A, 1:30 and 1_000 are refused.
+# Each key moves its track from the previous value (or the start) in duration_s with its easing
+# (linear | minjerk | ease_in_out | cartoon), then pauses hold_s. Tracks head/antennas/body run in parallel.
+# Head pose values are absolute (relative to the neutral head pose, omitted component = 0), not deltas.
+# +pitch = head down, +yaw = robot's left. Antennas: absolute right_deg/left_deg; more +right / -left = more upright,
+# 'rest' = the SDK rest angle (-9.998/+9.998 deg). start: rest = neutral head, antennas at rest, body 0.
+# expected valence/arousal are design targets, not measured results.
+# Kiosk timing: the robot starts saying the greeting line when the 'bow' key starts (config [motion.sync_labels]),
+# and the welcome screen appears at the same moment. If you rename 'bow', change the config too.
+# After editing: python -m pytest tests/test_greeting.py (HW4 safety checker; update the timing table in
+# reachy_cafe/behavior/motion_catalog.py if durations/labels change) and python tools/sim_check.py (MuJoCo).
+schema: reachy-motion/v1
+name: greeting
+variant: expressive
+draft: true
+intent: Hello, welcome! - a polite bow with a little antenna wave when a customer arrives.
+description: 'Notices the customer (head lifts, antennas perk) -> bows (head down and forward, held 0.35 s) while saying
+  hello -> rises looking up at the customer with a small head tilt while the right antenna waves like a hand -> back.
+  No sound: the greeting line is the audio. Draft V +0.7: upward head and raised antennas read friendly; A +0.4: lively
+  but calm (polite) timing.'
+expected: {valence: 0.7, arousal: 0.4}
+principles:
+- principle: anticipation
+  how: head 'notice' (pitch -6, z +4 mm) and antennas 'perk' before the bow
+- principle: staging
+  how: the bow holds 0.35 s at the bottom (pitch +22) so the greeting reads clearly; speech starts at 'bow'
+- principle: follow_through_and_overlapping_action
+  how: antennas 'fold' take 0.05 s longer than the head bow; the antennas settle after the wave
+- principle: secondary_action
+  how: right antenna 'wave-a/b/c' waves like a hand while the head rises
+- principle: appeal
+  how: head 'rise' ends looking slightly up with a +6 deg roll tilt (friendly)
+scale: {amplitude: 1.0, tempo: 1.0}
+start: rest
+tracks:
+  head:
+  - label: notice
+    duration_s: 0.3
+    hold_s: 0.1
+    easing: ease_in_out
+    pose: {x_mm: 0.0, y_mm: 0.0, z_mm: 4.0, roll_deg: 0.0, pitch_deg: -6.0, yaw_deg: 0.0}
+  - label: bow
+    duration_s: 0.55
+    hold_s: 0.35
+    easing: minjerk
+    pose: {x_mm: 4.0, y_mm: 0.0, z_mm: -6.0, roll_deg: 0.0, pitch_deg: 22.0, yaw_deg: 0.0}
+  - label: rise
+    duration_s: 0.55
+    hold_s: 0.4
+    easing: minjerk
+    pose: {x_mm: 0.0, y_mm: 0.0, z_mm: 3.0, roll_deg: 6.0, pitch_deg: -6.0, yaw_deg: 0.0}
+  - label: back
+    duration_s: 0.5
+    hold_s: 0.0
+    easing: minjerk
+    pose: {x_mm: 0.0, y_mm: 0.0, z_mm: 0.0, roll_deg: 0.0, pitch_deg: 0.0, yaw_deg: 0.0}
+  antennas:
+  - label: perk
+    duration_s: 0.3
+    hold_s: 0.1
+    easing: cartoon
+    right_deg: 15.0
+    left_deg: -15.0
+  - label: fold
+    duration_s: 0.6
+    hold_s: 0.3
+    easing: minjerk
+    right_deg: -25.0
+    left_deg: 25.0
+  - label: wave-a
+    duration_s: 0.2
+    hold_s: 0.0
+    easing: ease_in_out
+    right_deg: 35.0
+    left_deg: -15.0
+  - label: wave-b
+    duration_s: 0.18
+    hold_s: 0.0
+    easing: ease_in_out
+    right_deg: 5.0
+    left_deg: -15.0
+  - label: wave-c
+    duration_s: 0.18
+    hold_s: 0.34
+    easing: ease_in_out
+    right_deg: 35.0
+    left_deg: -15.0
+  - label: settle
+    duration_s: 0.55
+    hold_s: 0.0
+    easing: minjerk
+    right_deg: rest
+    left_deg: rest
+  body: []
+sound: null

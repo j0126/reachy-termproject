@@ -1,0 +1,125 @@
+# Reachy Café 기본 설정 (데스크톱 + 실제 로봇 기준)
+# 덮어쓰기: python -m reachy_cafe --config config/dev_laptop.toml
+
+[robot]
+host = "192.168.0.15"   # 공유기 기준. 핫스팟으로 바꿀 때는 이 값만 바꾸거나 REACHY_HOST 환경 변수 사용
+port = 8000
+mode = "real"           # real | mock
+media_backend = "webrtc"  # 카메라·오디오·모션이 연결 하나를 공유 (no_media로 두 번째 연결을 만들면 미디어가 죽음)
+connect_timeout_s = 10.0
+wake_up = true          # 시작할 때 SDK wake_up (잠든 자세에서 깨움)
+sleep_on_exit = false   # 끝낼 때 SDK goto_sleep (기본: REST 자세로만 돌아감)
+# 화면·카드 슬롯 위치 (로봇 기준 미터: x 앞, y 왼쪽, z 위). 배치를 고정한 뒤 실측해서 고친다.
+# 손님 기준 로봇이 화면 왼쪽에 있으면 화면은 로봇의 왼쪽(+y)에 있다.
+screen_point = [0.20, 0.22, -0.12]
+slot_point = [0.22, 0.20, -0.28]
+
+[hw]                    # HW 코드 위치 (pip install -e로 설치했으면 무시됨). 이 프로젝트 폴더 기준 상대 경로
+reachy_hw4 = "../reachy_hw4"
+hw3 = "../hw3/reachy-hw3-main"
+face_model = ["models/face_landmarker.task", "../../reachy-chamchamcham/models/face_landmarker.task",
+              "../hw2/reachy-chamchamcham/models/face_landmarker.task"]
+
+[server]
+host = "0.0.0.0"        # Pi 4 키오스크가 접속하므로 모든 인터페이스에서 수신
+port = 8000
+
+[session]
+default_lang = "ko"
+
+[timing]
+absent_s = 3.0            # 얼굴이 이만큼 안 보이고 최근 입력도 없으면 ABSENT
+present_confirm_s = 0.5   # 얼굴이 이만큼 연속으로 보여야 PRESENT
+engaged_hold_s = 1.0      # 가까이서 정면을 이만큼 보면 ENGAGED (HW2 "중앙 1초 응시")
+engaged_release_s = 2.0   # ENGAGED 조건이 이만큼 깨져야 해제
+recent_input_s = 5.0      # 터치·발화·카드가 이 시간 안에 있으면 얼굴이 안 보여도 "있음"
+ambiguous_hold_s = 1.0    # 큰 얼굴 2개 이상이 이만큼 유지되면 AMBIGUOUS
+stale_frame_s = 1.0       # 프레임이 이만큼 끊기면 DETECTION_UNCERTAIN
+hesitation_s = 8.0        # 입력 대기 중 이만큼 반응이 없으면 NO_RESPONSE
+pause_after_absent_s = 2.0  # 세션 중 ABSENT가 이만큼 이어지면 PAUSED (총 약 5초)
+pay_pause_after_absent_s = 20.0  # 카드를 넣을 차례에는 훨씬 길게 (지갑을 찾거나 투입구 쪽으로 숙여 얼굴이 잠깐 안 보임)
+resume_window_s = 60.0    # PAUSED에서 이 시간 안에 돌아오면 이어서 주문
+greet_repeat_s = 10.0
+card_wait_s = 20.0
+card_remove_s = 10.0
+processing_s = 2.0
+done_reset_s = 8.0
+regreet_after_s = 6.0     # IDLE로 돌아온 뒤에도 사람이 계속 있으면 이만큼 지나 다시 인사
+boredom_after_s = 20.0
+busy_notice_cooldown_s = 30.0
+invite_cooldown_s = 12.0  # 멀리 있는 사람을 다시 부르기까지 간격
+seek_help_s = 3.0         # 로봇이 말을 끝낸 뒤 대답 없이 로봇을 이만큼 쳐다보면 도움 요청으로 본다
+follow_glance_cooldown_s = 6.0
+chip_settle_s = 1.5       # 추천 화면에서 취향 칩을 누른 뒤 이만큼 손이 멈추면 바뀐 추천을 한 번 말한다
+
+[vision]
+engaged_face_h = 0.18     # 얼굴 높이 / 프레임 높이. 이 이상이면 개인 거리(약 1 m 이내)
+social_face_h = 0.08      # 이 이상이면 사회적 거리(약 2.5 m 이내), 미만이면 멀리
+ambiguous_face_h = 0.15
+max_yaw_deg = 30.0
+approach_window_s = 1.2   # 이 시간 동안 얼굴이 approach_gain 이상 커지면 "다가오는 중"
+approach_gain = 0.25
+look_robot_deg = 15.0     # yaw·pitch가 모두 이 안이면 로봇을 보는 중
+screen_yaw_sign = 1.0     # 화면 쪽으로 고개를 돌릴 때 yaw 부호 (2단계에서 실제 카메라로 보정)
+screen_yaw_min_deg = 15.0
+screen_yaw_max_deg = 70.0
+screen_pitch_sign = 1.0   # 고개를 숙일 때 pitch 부호 (2단계에서 보정)
+screen_pitch_down_deg = 15.0
+fps = 15.0                # 실제 카메라 얼굴 인식 처리 속도 (카메라는 30 fps)
+num_faces = 3             # AMBIGUOUS(여러 명) 판정을 위해 3명까지
+
+[speech]
+asr = "whisper"           # whisper | text  (text = 오퍼레이터 패널에서 발화를 텍스트로 주입)
+silence_timeout_ms = 800
+yesno_silence_timeout_ms = 500
+nlu_min_score = 80        # 메뉴 퍼지 매칭 최소 점수 (0-100)
+# HW3에서 검증한 설정을 그대로 쓴다 (HW3 폴더 기준 경로, 차례로 덮어씀)
+hw3_configs = ["config/local_e4b_supertonic.toml", "config/tts_threads2.toml"]
+asr_model = ""            # 비우면 HW3 설정 (large-v3-turbo). GPU 없는 노트북은 "small"
+asr_device = ""           # 비우면 HW3 설정 (cuda). GPU 없는 노트북은 "cpu"
+asr_compute_type = ""     # 비우면 HW3 설정 (float16). CPU는 "int8"
+min_utterance_s = 0.25    # 이보다 짧은 발화는 ASR에 보내지 않음 (잡음)
+max_no_speech_prob = 0.7  # Whisper가 말이 아니라고 보는 정도가 이보다 크면 버림
+end_overlap_s = 1.0       # 로봇 말이 끝나기 이 시간 안에 시작한 대답은 바지인이 아니어도 받아들임 (HW3 A1)
+tts_cache_dir = "assets/tts_cache"
+presynthesize = true      # 시작할 때 고정 문장(한/영)을 미리 합성해 디스크에 캐시
+
+[motion]
+variant = "expressive"    # expressive | neutral (HW4 변형)
+sync_label_timeout_s = 2.5
+sound = true              # 모션 효과음을 로봇 스피커로 (HW4 RobotSpeaker, daemon REST)
+gaze_rate_hz = 50.0
+gaze_max_speed_dps = 120.0  # 시선 이동 최대 각속도
+gaze_smoothing = 0.25       # 0-1, 클수록 목표를 빨리 따라감
+gaze_yaw_limit_deg = 45.0
+gaze_pitch_limit_deg = 25.0
+user_ray_timeout_s = 1.0    # 손님 방향 정보가 이보다 오래되면 시선을 그대로 둠
+gaze_min_joint_margin_deg = 14.0  # 시선 목표의 Stewart 관절 여유 하한 (HW4 정책 10°보다 넉넉히: 작업 공간 가장자리에선
+                                  # 추종 오차가 커짐, MuJoCo 점검에서 여유 11°일 때 3.7° 오차 vs 20° 이상이면 0.3° 이내)
+keepalive_s = 0.5           # 시선이 멈춰 있어도 이 간격으로 목표를 다시 보냄
+label_delay_s = 0.1         # 키프레임 라벨을 이만큼 늦게 냄 (명령→실제 머리 움직임 지연, HW4 실측 약 0.19 s)
+transition_max_rot_dps = 150.0   # 감정 모션 앞 전이의 회전 속도 상한 (HW4 기본 60: 슬롯을 보던 자세에서 1.7 s 걸림 → 0.6 s)
+transition_max_antenna_dps = 360.0
+transition_min_s = 0.3          # 전이 최소 시간 (HW4 기본 0.5). 빨라진 전이도 HW4 prepare_timeline이 매번 검사
+sound_offset_ms = 0.0       # 모션 효과음을 YAML 시각보다 늦추거나(+) 당김(-) (HW4 offset_ms)
+
+[motion.sync_labels]      # 이 키프레임이 시작될 때 화면·음성을 띄움 (HW4 YAML의 head 트랙 라벨)
+aha_recommend = "present"
+failure = "slump"
+success = "nod-down"
+greeting = "bow"          # 카페 모션 (termproject/motions/): 고개를 숙이기 시작할 때 인사말·환영 화면
+
+[features]                # with/without 실험은 이 값만 바꿔서 진행 (오퍼레이터 패널에서도 전환 가능)
+motion = true
+gaze = true
+status_strip = true
+slot_led = true
+# 보완 기능: 테스트해 보고 유지할지 뺄지 정한다
+invite = true             # 멀리 있으면 눈 맞추고 안테나로 부르기, 다가오면 인사 (접근 의도)
+attention = true          # 고개 방향으로 로봇/화면/딴 곳 판단 → 망설임·도움 요청 판단에 사용
+backchannel = true        # 손님이 말을 시작하면 끄덕임, 화면을 터치하면 화면 쪽으로 힐끗
+context_talk = true       # 날씨·시간대 인사와 추천 (오퍼레이터가 날씨 설정)
+auto_staff = true         # 못 알아들은 말이 세 번 이어지면 직원 호출 (소음이 큰 발표장에서는 끌 수 있음)
+
+[logging]
+dir = "logs"

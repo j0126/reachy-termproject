@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reachy의 생각</title>
+<style>
+  :root { --bg:#14100c; --panel:#1f1813; --line:#3a2c22; --ink:#f6efe6; --muted:#b9a797; --accent:#e8772e;
+          --sense:#2f6fd6; --interp:#8a5cf6; --decide:#d99a1e; --act:#2f8f5b; --observe:#1aa3a3; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html, body { height:100%; background:var(--bg); color:var(--ink); overflow:hidden;
+    font-family:"Pretendard","Noto Sans KR","Malgun Gothic",system-ui,sans-serif; }
+  .stage { width:min(100vw, calc(100vh * 16 / 9)); height:min(100vh, calc(100vw * 9 / 16)); margin:0 auto;
+    display:grid; grid-template-columns:28% 1fr; grid-template-rows:auto 1fr; gap:1.2vmin; padding:1.4vmin;
+    container-type:size; font-size:1.6cqw; }
+  header { grid-column:1 / 3; display:flex; align-items:center; gap:1.4cqw; }
+  header h1 { font-size:2.3cqw; font-weight:800; }
+  .chip { padding:.35cqw 1cqw; border-radius:99px; background:#3a2a20; font-size:1.25cqw; color:var(--muted); }
+  .chip.big { background:var(--accent); color:#fff; font-weight:800; font-size:1.45cqw; }
+  .mirror { background:#000; border-radius:1.2cqw; overflow:hidden; position:relative; }
+  .mirror iframe { position:absolute; inset:0; width:100%; height:100%; border:0; pointer-events:none; }
+  .right { display:grid; grid-template-rows:auto 1fr 1fr; gap:1.2vmin; min-height:0; }
+  .loop { display:flex; align-items:center; gap:.8cqw; background:var(--panel); border-radius:1.2cqw; padding:1cqw 1.2cqw; }
+  .step { flex:1; text-align:center; padding:.9cqw .4cqw; border-radius:.9cqw; border:.15cqw solid var(--line);
+    color:var(--muted); font-weight:800; font-size:1.45cqw; transition:background .25s, color .25s, transform .25s; }
+  .step small { display:block; font-weight:500; font-size:1.05cqw; margin-top:.2cqw; }
+  .step.on { color:#fff; transform:scale(1.05); }
+  .step.sense.on { background:var(--sense); border-color:var(--sense); }
+  .step.interp.on { background:var(--interp); border-color:var(--interp); }
+  .step.decide.on { background:var(--decide); border-color:var(--decide); }
+  .step.act.on { background:var(--act); border-color:var(--act); }
+  .step.observe.on { background:var(--observe); border-color:var(--observe); }
+  .arrow { color:var(--muted); font-size:1.6cqw; }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:1.2vmin; min-height:0; }
+  .card { background:var(--panel); border-radius:1.2cqw; padding:1.2cqw 1.4cqw; min-height:0; overflow:hidden;
+    display:flex; flex-direction:column; gap:.7cqw; }
+  .card h2 { font-size:1.3cqw; color:var(--muted); font-weight:700; letter-spacing:.03em; }
+  .big { font-size:2.6cqw; font-weight:900; line-height:1.1; }
+  .kv { display:grid; grid-template-columns:8.5cqw 1fr; gap:.4cqw .8cqw; font-size:1.35cqw; }
+  .kv b { color:var(--muted); font-weight:600; }
+  .vision { display:flex; gap:1.2cqw; align-items:center; }
+  canvas { width:16cqw; height:9cqw; background:#0b0806; border-radius:.8cqw; flex:0 0 auto; }
+  .say { font-size:1.6cqw; line-height:1.35; }
+  .say b { color:var(--muted); margin-right:.6cqw; }
+  .say.robot { color:#ffe1c4; }
+  .intent { font-family:Consolas,"D2Coding",monospace; font-size:1.2cqw; color:#c9b8ff; }
+  .muted { color:var(--muted); }
+  .pulse { animation:pulse .9s ease-out; }
+  @keyframes pulse { from { background:#4a3526; } to { background:var(--panel); } }
+  .conn { position:fixed; bottom:1vmin; right:1vmin; background:#c0392b; color:#fff; padding:.4vmin 1.4vmin; border-radius:99px; font-size:1.4vmin; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <header>
+    <h1>☕ Reachy의 생각</h1>
+    <span class="chip big" id="state">IDLE</span>
+    <span class="chip" id="overlay"></span>
+    <span class="chip" id="condition">조건 B</span>
+    <span class="chip" id="lang">ko</span>
+    <span class="chip" id="trial"></span>
+  </header>
+  <div class="mirror"><iframe src="/kiosk" title="키오스크 미러" tabindex="-1"></iframe></div>
+  <div class="right">
+    <div class="loop" id="loop">
+      <div class="step sense" data-step="sense">Sense<small>보고 듣기</small></div><span class="arrow">→</span>
+      <div class="step interp" data-step="interp">Interpret<small>상태·의도 해석</small></div><span class="arrow">→</span>
+      <div class="step decide" data-step="decide">Decide<small>주문 FSM</small></div><span class="arrow">→</span>
+      <div class="step act" data-step="act">Act<small>말·모션·시선·화면</small></div><span class="arrow">→</span>
+      <div class="step observe" data-step="observe">Observe<small>손님 반응 기다림</small></div>
+    </div>
+    <div class="row">
+      <section class="card" id="cardSee">
+        <h2>👁 보는 것 (사람 상태)</h2>
+        <div class="vision"><canvas id="cv" width="320" height="180"></canvas>
+          <div><div class="big" id="human">ABSENT</div><div class="muted" id="humanSub"></div></div></div>
+        <div class="kv"><b>거리</b><span id="zone">-</span><b>주의</b><span id="attention">-</span>
+          <b>참여 점수</b><span id="score">-</span></div>
+      </section>
+      <section class="card" id="cardTalk">
+        <h2>💬 대화</h2>
+        <p class="say"><b>손님</b><span id="heard"></span></p>
+        <p class="say robot"><b>Reachy</b><span id="said"></span></p>
+        <p class="intent" id="intent"></p>
+      </section>
+    </div>
+    <div class="row">
+      <section class="card" id="cardDecide">
+        <h2>🧠 판단</h2>
+        <div class="big" id="plan">-</div>
+        <div class="kv"><b>장바구니</b><span id="cart">-</span><b>추천 조건</b><span id="prefs">-</span>
+          <b>세션</b><span id="session">-</span></div>
+      </section>
+      <section class="card" id="cardAct">
+        <h2>🤖 행동</h2>
+        <div class="big" id="activity">대기 중</div>
+        <div class="kv"><b>모션</b><span id="motion">-</span><b>제스처</b><span id="gesture">-</span>
+          <b>시선</b><span id="gaze">-</span><b>슬롯 LED</b><span id="led">-</span></div>
+      </section>
+    </div>
+  </div>
+</div>
+<div class="conn" id="conn">연결 중…</div>
+<script src="/ui/stage.js"></script>
+</body>
+</html>

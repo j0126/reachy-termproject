@@ -1,0 +1,8 @@
+# Pi 4에서 실행되는 파일은 Windows에서 커밋해도 LF로 유지
+*.sh text eol=lf
+*.service text eol=lf
+pi_agent/*.py text eol=lf
+pi_agent/*.example text eol=lf
+*.pptx binary
+*.command text eol=lf
+*.bat text eol=crlf

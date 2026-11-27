@@ -1,0 +1,19 @@
+# 키오스크 앱 전체를 HW4 MuJoCo 시뮬 로봇에 붙여 시험할 때 (로봇 없이 노트북에서)
+#   1) .venv\Scripts\python -X utf8 tools\sim_check.py --daemon-only      (시뮬 daemon, 127.0.0.1:8020)
+#   2) .venv\Scripts\python -X utf8 -m reachy_cafe --config config/sim.toml
+# 시뮬에는 카메라·마이크가 없으므로 얼굴은 오퍼레이터 프리셋, 발화는 텍스트 입력, 음성 출력은 시간만 흉내 낸다.
+
+[robot]
+mode = "real"
+host = "127.0.0.1"
+port = 8020
+connection_mode = "localhost_only"
+robot_name = "hw4_sim"
+media_backend = "no_media"
+connect_timeout_s = 15.0
+
+[motion]
+sound = false             # 시뮬 daemon은 --no-media라 효과음을 낼 수 없다
+
+[speech]
+asr = "text"

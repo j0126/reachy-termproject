@@ -1,0 +1,131 @@
+{
+  "large_upcharge": 500,
+  "categories": [
+    {"id": "coffee", "name": {"ko": "커피", "en": "Coffee"}},
+    {"id": "non_coffee", "name": {"ko": "논커피", "en": "Non-coffee"}}
+  ],
+  "items": [
+    {
+      "id": "americano",
+      "name": {"ko": "아메리카노", "en": "Americano"},
+      "aliases": ["아메리카노", "아메", "아아", "뜨아", "americano", "black coffee"],
+      "alias_options": {"아아": {"temp": "ice"}, "뜨아": {"temp": "hot"}},
+      "category": "coffee", "price": 4000,
+      "temps": ["hot", "ice"], "sizes": ["regular", "large"],
+      "sweetness": 0, "caffeine": true, "tags": ["coffee", "bitter", "classic"],
+      "popularity": 0.9, "emoji": "☕",
+      "desc": {"ko": "에스프레소에 물을 더한 깔끔한 커피", "en": "Espresso with hot water, clean and bold"},
+      "in_stock": true
+    },
+    {
+      "id": "latte",
+      "name": {"ko": "카페라떼", "en": "Caffè Latte"},
+      "aliases": ["카페라떼", "까페라떼", "라떼", "latte", "cafe latte", "caffe latte"],
+      "category": "coffee", "price": 4500,
+      "temps": ["hot", "ice"], "sizes": ["regular", "large"],
+      "sweetness": 1, "caffeine": true, "tags": ["coffee", "milky", "mild"],
+      "popularity": 0.85, "emoji": "🥛",
+      "desc": {"ko": "에스프레소에 우유를 더한 부드러운 커피", "en": "Espresso with steamed milk, smooth and mild"},
+      "in_stock": true
+    },
+    {
+      "id": "vanilla_latte",
+      "name": {"ko": "바닐라 라떼", "en": "Vanilla Latte"},
+      "aliases": ["바닐라라떼", "바닐라", "vanilla latte", "vanilla"],
+      "category": "coffee", "price": 5000,
+      "temps": ["hot", "ice"], "sizes": ["regular", "large"],
+      "sweetness": 3, "caffeine": true, "tags": ["coffee", "milky", "sweet", "creamy"],
+      "popularity": 0.8, "emoji": "🍦",
+      "desc": {"ko": "바닐라 시럽을 넣은 달콤한 라떼", "en": "Latte sweetened with vanilla syrup"},
+      "in_stock": true
+    },
+    {
+      "id": "caramel_macchiato",
+      "name": {"ko": "캐러멜 마키아토", "en": "Caramel Macchiato"},
+      "aliases": ["캐러멜마키아토", "카라멜마키아토", "카라멜마끼아또", "캐러멜마끼아또", "마키아토", "마끼아또", "caramel macchiato", "macchiato"],
+      "category": "coffee", "price": 5500,
+      "temps": ["hot", "ice"], "sizes": ["regular", "large"],
+      "sweetness": 3, "caffeine": true, "tags": ["coffee", "milky", "sweet"],
+      "popularity": 0.75, "emoji": "🍮",
+      "desc": {"ko": "캐러멜 소스를 올린 달콤한 커피", "en": "Milk and espresso topped with caramel"},
+      "in_stock": true
+    },
+    {
+      "id": "cafe_mocha",
+      "name": {"ko": "카페모카", "en": "Caffè Mocha"},
+      "aliases": ["카페모카", "모카", "cafe mocha", "caffe mocha", "mocha"],
+      "category": "coffee", "price": 5000,
+      "temps": ["hot", "ice"], "sizes": ["regular", "large"],
+      "sweetness": 3, "caffeine": true, "tags": ["coffee", "chocolate", "sweet", "rich"],
+      "popularity": 0.7, "emoji": "🍫",
+      "desc": {"ko": "초콜릿과 에스프레소의 진한 조합", "en": "Espresso with chocolate, rich and sweet"},
+      "in_stock": true
+    },
+    {
+      "id": "einspanner",
+      "name": {"ko": "아인슈페너", "en": "Einspänner"},
+      "aliases": ["아인슈페너", "아인슈패너", "einspanner", "einspänner", "cream coffee"],
+      "category": "coffee", "price": 5500,
+      "temps": ["hot", "ice"], "sizes": ["regular", "large"],
+      "sweetness": 2, "caffeine": true, "tags": ["coffee", "creamy", "sweet", "rich"],
+      "popularity": 0.6, "emoji": "☁️",
+      "desc": {"ko": "달콤한 크림을 얹은 진한 커피", "en": "Strong coffee topped with sweet cream"},
+      "in_stock": false
+    },
+    {
+      "id": "honey_grapefruit_tea",
+      "name": {"ko": "자몽 허니 티", "en": "Honey Grapefruit Tea"},
+      "aliases": ["자몽허니티", "자몽티", "자몽", "grapefruit tea", "honey grapefruit tea", "grapefruit"],
+      "category": "non_coffee", "price": 5000,
+      "temps": ["hot", "ice"], "sizes": ["regular", "large"],
+      "sweetness": 3, "caffeine": false, "tags": ["tea", "fruity", "refreshing", "sweet"],
+      "popularity": 0.8, "emoji": "🍊",
+      "desc": {"ko": "자몽과 꿀이 들어간 상큼한 차", "en": "Grapefruit and honey, bright and refreshing"},
+      "in_stock": true
+    },
+    {
+      "id": "hibiscus_tea",
+      "name": {"ko": "히비스커스 티", "en": "Hibiscus Tea"},
+      "aliases": ["히비스커스티", "히비스커스", "hibiscus tea", "hibiscus"],
+      "category": "non_coffee", "price": 4500,
+      "temps": ["hot", "ice"], "sizes": ["regular", "large"],
+      "sweetness": 1, "caffeine": false, "tags": ["tea", "fruity", "refreshing"],
+      "popularity": 0.6, "emoji": "🌺",
+      "desc": {"ko": "새콤하고 깔끔한 꽃잎 차", "en": "Tart, clean flower tea"},
+      "in_stock": true
+    },
+    {
+      "id": "chamomile_tea",
+      "name": {"ko": "캐모마일 티", "en": "Chamomile Tea"},
+      "aliases": ["캐모마일티", "카모마일티", "캐모마일", "카모마일", "chamomile tea", "chamomile"],
+      "category": "non_coffee", "price": 4500,
+      "temps": ["hot"], "sizes": ["regular", "large"],
+      "sweetness": 0, "caffeine": false, "tags": ["tea", "calm", "floral"],
+      "popularity": 0.5, "emoji": "🌼",
+      "desc": {"ko": "은은한 향의 따뜻한 허브차", "en": "Gentle, warm herbal tea"},
+      "in_stock": true
+    },
+    {
+      "id": "strawberry_latte",
+      "name": {"ko": "딸기 라떼", "en": "Strawberry Latte"},
+      "aliases": ["딸기라떼", "딸기", "strawberry latte", "strawberry"],
+      "category": "non_coffee", "price": 5500,
+      "temps": ["ice"], "sizes": ["regular", "large"],
+      "sweetness": 3, "caffeine": false, "tags": ["milky", "fruity", "sweet"],
+      "popularity": 0.65, "emoji": "🍓",
+      "desc": {"ko": "딸기청과 우유가 들어간 달콤한 음료", "en": "Strawberry purée with milk, sweet"},
+      "in_stock": true
+    },
+    {
+      "id": "green_tea_latte",
+      "name": {"ko": "녹차 라떼", "en": "Green Tea Latte"},
+      "aliases": ["녹차라떼", "말차라떼", "녹차", "말차", "green tea latte", "matcha latte", "matcha"],
+      "category": "non_coffee", "price": 5000,
+      "temps": ["hot", "ice"], "sizes": ["regular", "large"],
+      "sweetness": 2, "caffeine": true, "tags": ["tea", "milky"],
+      "popularity": 0.6, "emoji": "🍵",
+      "desc": {"ko": "녹차와 우유가 어우러진 라떼", "en": "Green tea with steamed milk"},
+      "in_stock": true
+    }
+  ]
+}

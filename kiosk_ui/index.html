@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Reachy Café</title>
+<link rel="stylesheet" href="/ui/style.css">
+</head>
+<body>
+<div id="app">
+  <header id="strip" class="strip">
+    <div class="strip-top">
+      <div id="robotFace" class="robot-face idle" aria-hidden="true"><i></i><i></i></div>
+      <div class="strip-text">
+        <div id="activity" class="activity">대기 중</div>
+        <div id="plan" class="plan"></div>
+      </div>
+      <figure class="vision" aria-label="로봇이 보는 것">
+        <canvas id="visionCanvas" width="192" height="108"></canvas>
+        <figcaption id="visionLabel"></figcaption>
+      </figure>
+    </div>
+    <div class="captions">
+      <p class="cap heard"><b id="heardLabel">들은 말</b><span id="heard"></span></p>
+      <p class="cap said"><b>Reachy</b><span id="said"></span></p>
+    </div>
+    <ol id="steps" class="steps"></ol>
+  </header>
+  <div id="notice" class="notice hidden" role="status"></div>
+  <main id="screen" class="screen"></main>
+  <div id="overlay" class="overlay hidden"></div>
+  <div id="conn" class="conn">연결 중…</div>
+</div>
+<script src="/ui/app.js"></script>
+</body>
+</html>
