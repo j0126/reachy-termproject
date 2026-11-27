@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "reachy-s2s"
+version = "0.1.0"
+description = "Reachy Mini speech-to-speech systems (cascaded vs. cloud) for HRI Homework 3"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "reachy-mini==1.11.0",   # must match the robot daemon (checked: daemon 1.11.0); bundles GStreamer on Windows
+    "numpy>=2.2.5",
+    "soxr>=0.5",             # streaming resampler (API/TTS rates <-> robot 16 kHz)
+    "PySide6-Essentials>=6.7",  # dashboard GUI (QtCore/QtGui/QtWidgets only; no WebEngine)
+    "pyqtgraph>=0.13.7",     # real-time mel spectrogram
+    "python-dotenv>=1.0",    # API keys from .env (Phase 2+)
+    "faster-whisper>=1.2.1",  # ASR (CTranslate2); also ships silero_vad_v6.onnx used by our VAD
+    "google-genai>=2.25",    # Gemini Interactions API (LLM + TTS); 2.31.0 verified
+    "httpx>=0.28",           # OpenAI-compatible LLM adapter (local llama.cpp server, Groq, HF router); 0.28.1 verified
+    "huggingface-hub>=1.0",  # local LLM: GGUF files from the HF cache (apps.llm_server); 1.33.0 verified
+    "supertonic==1.3.1",     # local Korean TTS (ONNX, CPU); this version pins the model files (HF Supertone/supertonic-3 @ 724fb5ab)
+    "psutil>=5.9",           # Phase 4.5 resource monitor (already installed with reachy-mini; 7.2.2 verified)
+]
+# Not a Python package: the local LLM server is llama.cpp's official Windows build
+# (b11680, CUDA 12.4), installed outside the repo - see README "Phase 2 local LLM".
+
+[project.optional-dependencies]
+cuda = [                     # CTranslate2 4.x on Windows/Linux GPUs: cuBLAS 12 + cuDNN 9 DLLs
+    "nvidia-cublas-cu12",
+    "nvidia-cudnn-cu12>=9,<10",
+]
+
+[project.scripts]
+s2s-audio-check = "reachy_s2s.apps.audio_check:main"
+s2s-dashboard = "reachy_s2s.apps.dashboard:main"
+s2s-loopback = "reachy_s2s.apps.loopback_probe:main"
+s2s-daemon-logs = "reachy_s2s.apps.daemon_logs:main"
+s2s-cascaded = "reachy_s2s.apps.cascaded:main"
+s2s-timing-check = "reachy_s2s.apps.timing_check:main"
+s2s-doubletalk = "reachy_s2s.apps.doubletalk_check:main"
+s2s-llm-probe = "reachy_s2s.apps.llm_probe:main"
+s2s-llm-server = "reachy_s2s.apps.llm_server:main"
+s2s-llm-bench = "reachy_s2s.apps.llm_bench:main"
+s2s-cloud = "reachy_s2s.apps.cloud_s2s:main"
+s2s-live-probe = "reachy_s2s.apps.live_probe:main"
+s2s-pause-record = "reachy_s2s.apps.pause_record:main"
+s2s-pause-eval = "reachy_s2s.apps.pause_eval:main"
+s2s-pause-replay = "reachy_s2s.apps.pause_replay:main"
+s2s-history-probe = "reachy_s2s.apps.history_probe:main"
+s2s-motion-preview = "reachy_s2s.apps.motion_preview:main"
+s2s-motion-report = "reachy_s2s.apps.motion_report:main"
+s2s-tts-threads-bench = "reachy_s2s.apps.tts_threads_bench:main"
+s2s-phase5-report = "reachy_s2s.apps.phase5_report:main"
+s2s-check-setup = "reachy_s2s.apps.check_setup:main"
+
+[tool.setuptools.packages.find]
+include = ["reachy_s2s*"]

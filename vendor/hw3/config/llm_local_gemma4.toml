@@ -1,0 +1,22 @@
+# Experiment override: local LLM instead of the Gemini API.
+# Why: the Gemini free tier allowed only 20 requests/day for gemini-3.6-flash
+# (HTTP 429 on 2026-10-16) and gemini-3.8-flash returned 503; the user chose to
+# measure a local model first. Gemma 4 E4B (Google, Apache-2.0) as GGUF from
+# Hugging Face, served by llama.cpp on this PC (no key, no quota, no data
+# leaves the PC). Start the server first:
+#     python -m reachy_s2s.apps.llm_server --config config/llm_local_gemma4.toml
+# then use the same --config for the dashboard / cascaded / llm_bench apps.
+
+[llm]
+provider = "openai_compat"
+model = "gemma-4-E4B-it-Q4_0"   # = [llm_server] alias
+base_url = "http://127.0.0.1:8080/v1"
+api_key_env = ""                # local server: no key
+thinking_level = ""             # thinking is switched off on the server (--reasoning off)
+max_output_tokens = 512         # no thinking tokens to budget for; replies are 1-3 sentences
+
+[llm_server]
+model_repo = "ggml-org/gemma-4-E4B-it-GGUF"
+model_file = "gemma-4-E4B-it-Q4_0.gguf"
+model_revision = "b8093469224f83f5c38f691eb906c380e9e63114"
+alias = "gemma-4-E4B-it-Q4_0"

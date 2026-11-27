@@ -1,0 +1,8 @@
+# Phase 4.5 R0: the dashboard on the real robot (audio, conversation) while every motion command goes
+# to a simulated motor. Motor ON / Motion ON then only log the decisions (motion.csv, motion.* events);
+# nothing is sent to the motors. Use with: python -m reachy_s2s.apps.dashboard --config config/motion_dry_run.toml
+[motion]
+sink = "dry_run"
+
+[logging]
+resource_monitor = true         # system.resources events (process / thread CPU) for the R0 report

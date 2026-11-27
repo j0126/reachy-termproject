@@ -1,0 +1,8 @@
+# Phase 4 A1 with a longer end-of-speech silence (pause handling): 2000 ms instead of 800 ms.
+#   --config config/local_e4b_supertonic.toml --config config/a1_pause2000.toml
+[vad]
+silence_timeout_ms = 2000
+
+[cascaded]
+variant = "A1-2000"
+barge_in = true

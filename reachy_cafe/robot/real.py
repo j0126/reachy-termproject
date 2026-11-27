@@ -193,7 +193,7 @@ class RealRobot:
 
             hw3 = load_hw3_config(self.cfg)
             backend = ReachyMediaBackend(self.link.mini.media, hw3.audio.output_latency_hint_ms / 1000.0)
-            listen = self.cfg["speech"].get("asr", "whisper") == "whisper"
+            listen = self.cfg["speech"].get("asr", "whisper") in ("whisper", "remote")
             prompts = {lang: menu_prompt(menu, lang) for lang in ("ko", "en")} if menu is not None else {}
             self.speech = KioskSpeech(self.cfg, self.bus, backend, hw3=hw3, prompts=prompts,
                                       events_path=None if self.log_dir is None else self.log_dir / "speech_events.jsonl")

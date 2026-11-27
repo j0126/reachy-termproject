@@ -1,0 +1,10 @@
+# Phase 4.5 "improved" System A: Supertonic on 2 CPU threads instead of all cores
+# ([tts] threads = 0 = the Phase 2-4 baseline, kept in default.toml / local_e4b_supertonic.toml).
+# Layer it after the system config, for A0 and A1 alike (Phase 5 compares them with the same TTS setting):
+#   --config config/local_e4b_supertonic.toml --config config/tts_threads2.toml [--config config/a1.toml]
+# Turn rows record it (column tts_threads); turn_report --by variant+tts_threads separates the results.
+# Measured 2026-10-17 (apps.tts_threads_bench, 6 answers from the Phase 4 robot sessions x 4 runs, robot mic):
+#   synthesis median 0.81 s vs 1.52 s (threads 0), 4 threads 0.79 s; process CPU ~310 % vs ~1730 % (4: ~685 %);
+#   the 50 Hz motion loop stayed at 50 Hz (threads 0: 37-43 Hz). Details: docs/PHASE4_5_REPORT.md section 9.
+[tts]
+threads = 2

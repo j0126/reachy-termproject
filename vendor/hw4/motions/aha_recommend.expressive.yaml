@@ -1,0 +1,97 @@
+# Reachy Mini HW4 motion 'aha_recommend' (expressive) - schema reachy-motion/v1. Edit the values and reload.
+# Revision 1 (2026-11-11): think deeper + 0.3 s pause, bigger pop with both antennas up together and a 0.35 s
+# freeze. The previous version is motions/candidates/aha_v0/ (before/after comparison).
+# Signed-off design (draft: false): the student signed off revision 1 on 2026-11-11 (docs/phase3/MOTION_REVISIONS.md).
+# Units: angles in degrees (*_deg), head translation in millimetres (*_mm), times in seconds (*_s).
+# Write plain decimal numbers (10, -2.5, 1.0e-3); 010, 0x0A, 1:30 and 1_000 are refused.
+# Each key moves its track from the previous value (or the start) in duration_s with its easing
+# (linear | minjerk | ease_in_out | cartoon), then pauses hold_s. Tracks head/antennas/body run in parallel.
+# Head pose values are absolute (relative to the neutral head pose, omitted component = 0), not deltas.
+# Antennas: absolute right_deg/left_deg; 'rest' = the SDK rest angle exactly (-0.1745/+0.1745 rad, i.e.
+# -9.998/+9.998 deg; -10/+10 deg is 0.0019 deg off). start: rest = neutral head, antennas at rest, body 0.
+# scale.amplitude scales every key about the start; scale.tempo divides every duration and hold.
+# expected valence/arousal are design targets, not measured results.
+schema: reachy-motion/v1
+name: aha_recommend
+variant: expressive
+draft: false
+intent: Aha! I have an idea - try this one (looks at the recommended item on its left).
+description: 'Thinking pose (head down-left and sunk, antennas droop) held still for 0.3 s -> fast cartoon pop up with
+  both antennas snapping upright at the same moment, frozen 0.35 s (the idea) -> turns to the item on its left and holds
+  (presenting) -> back. Forethought (think + pause) then reaction (pop). Expected V +0.7: head up and raised antennas
+  read positive; A +0.6: fast pop and antenna wiggle. 0.9 s longer than neutral.'
+expected: {valence: 0.7, arousal: 0.6}
+principles:
+- principle: anticipation
+  how: head 'think' (pitch +10, yaw -8, z -2 mm) and antenna 'droop', then a 0.3 s still pause before the pop
+- principle: timing
+  how: the 0.3 s pause separates thinking from the realization; the 0.55 s pop is the fastest key (speed ratio <= 0.40)
+- principle: exaggeration
+  how: 'head ''pop'': cartoon easing (+-10 % anticipation / overshoot) up to pitch -15 with z +6 mm'
+- principle: staging
+  how: head and antennas freeze 0.35 s at the top of the pop; 'present' holds 0.6 s on the item (yaw +22, pitch +4)
+- principle: squash_and_stretch
+  how: the head sinks 2 mm while thinking and rises to z +6 mm on the pop
+- principle: secondary_action
+  how: antenna 'wiggle' while presenting
+- principle: follow_through_and_overlapping_action
+  how: the antenna wiggle continues after the head has stopped on the item; antennas settle with the head
+scale: {amplitude: 1.0, tempo: 1.0}
+start: rest
+tracks:
+  head:
+  - label: think
+    duration_s: 0.5
+    hold_s: 0.3
+    easing: ease_in_out
+    pose: {x_mm: 0.0, y_mm: 0.0, z_mm: -2.0, roll_deg: 4.0, pitch_deg: 10.0, yaw_deg: -8.0}
+  - label: pop
+    duration_s: 0.55
+    hold_s: 0.35
+    easing: cartoon
+    pose: {x_mm: 0.0, y_mm: 0.0, z_mm: 6.0, roll_deg: 0.0, pitch_deg: -15.0, yaw_deg: 0.0}
+  - label: present
+    duration_s: 0.5
+    hold_s: 0.6
+    easing: minjerk
+    pose: {x_mm: 0.0, y_mm: 0.0, z_mm: 0.0, roll_deg: -6.0, pitch_deg: 4.0, yaw_deg: 22.0}
+  - label: back
+    duration_s: 0.7
+    hold_s: 0.0
+    easing: minjerk
+    pose: {x_mm: 0.0, y_mm: 0.0, z_mm: 0.0, roll_deg: 0.0, pitch_deg: 0.0, yaw_deg: 0.0}
+  antennas:
+  - label: droop
+    duration_s: 0.5
+    hold_s: 0.3
+    easing: minjerk
+    right_deg: -30.0
+    left_deg: 30.0
+  - label: perk
+    duration_s: 0.55
+    hold_s: 0.35
+    easing: cartoon
+    right_deg: 5.0
+    left_deg: -5.0
+  - label: wiggle-a
+    duration_s: 0.15
+    hold_s: 0.0
+    easing: ease_in_out
+    right_deg: -5.0
+    left_deg: 5.0
+  - label: wiggle-b
+    duration_s: 0.15
+    hold_s: 0.8
+    easing: ease_in_out
+    right_deg: 5.0
+    left_deg: -5.0
+  - label: settle
+    duration_s: 0.7
+    hold_s: 0.0
+    easing: minjerk
+    right_deg: rest
+    left_deg: rest
+  body: []
+sound:
+  file: aha.wav
+  at_s: 0.85

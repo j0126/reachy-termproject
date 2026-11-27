@@ -61,6 +61,9 @@
   - 확인: 테스트 261개 통과. mock 앱을 720×1280으로 띄워 메뉴·추천·품절·옵션·장바구니·결제·완료·설명 창을 한국어·영어, 직원 호출 띠, 자막 두 줄 조합으로 측정(넘침 0). 후보 창은 띄우지 못해 크기 계산으로만 확인
   - Pi에 키오스크 설치(`install_pi.sh`, 약 7분). 첫 부팅에서 Chromium이 흰 화면으로 멈췄다: 스크린샷이 완전히 흰색이고 페이지가 서버에 한 번도 붙지 않았으며, Chromium 로그에 시작 직후 "Network service crashed"가 있었다(부팅 직후 업데이트 확인으로 SD 카드가 바쁠 때). 패널·화면 출력은 정상. 그래서 `start_kiosk.sh`가 페이지 연결을 확인하게 했다: 키오스크 페이지는 `/ws/ui?device=pi`로 붙고 `/healthz`가 `pi_kiosk` 수를 알려 주며, 60초 안에 안 붙으면 Chromium을 다시 띄운다(안 붙을 때마다 두 배, 최대 120초, Chromium이 꺼져도 다시 띄움, `pi_kiosk`를 모르는 옛 서버에서는 다시 띄우지 않음). WSL에서 가짜 Chromium·서버로 네 경우를 시험했고, Pi 재부팅 후 약 2분 만에 페이지가 붙었다(`pi_kiosk: 1`). 테스트 262개 통과. 카드 에이전트(websockets 15)는 노트북 서버를 다시 띄워도 저절로 다시 붙었다
   - 실물 확인(Pi, 노트북 목업 서버에 연결): 메뉴가 잘리지 않고 커서도 보이지 않음(팀 확인), Pi에서 누른 터치 31개가 서버에 모두 들어옴(주문 시작 → 메뉴 → 옵션 → 결제 → 직원 호출). 남은 것: Pi `kiosk.env`의 `BRAIN_HOST`를 데스크톱 IP로 바꾸고 데스크톱에 이 코드를 넣기, 카드 슬롯 배선 시험
+- **11/27 현장 두뇌 PC 결정과 git 하나로 실행**: 데스크톱은 발표장에 못 가져간다. 그래서 1순위 연구실 NVIDIA 노트북, 2순위 원격 음성 인식, 3순위 노트북 CPU `small`로 정했다(노트북 CPU 실측은 아래 11장 리스크 표).
+  - 원격 음성 인식(`[speech] asr = "remote"`): 현장 PC가 손님 발화(16 kHz PCM)를 데스크톱의 `python -m reachy_cafe.asr_server`(HW3 large-v3-turbo GPU 설정 그대로, 언어·메뉴 프롬프트는 요청마다)로 보내고 글자를 받는다. 데스크톱이 응답하지 않으면 현장 PC CPU의 `small`로 넘어가고 `asr_retry_s`(20 s) 동안은 데스크톱을 기다리지 않는다. 로그 `speech.utterance`에 `asr: remote|fallback`, 실패는 `error where=asr_remote`. 학교 망에서 노트북→데스크톱(10.8.139.133) 연결은 확인했지만 서버를 실제로 띄워 호출하지는 않았다(데스크톱에서 실행 필요)
+  - HW 코드를 저장소 안으로: `vendor/hw3`(HW3 `reachy_s2s` + 설정), `vendor/hw4`(HW4 `reachy_motion` + 모션 YAML·효과음), `models/face_landmarker.task`(HW2)를 `tools/vendor_hw.py`로 원본에서 복사(원본은 읽기만). `[hw]` 기본 경로를 `vendor/`로 바꾸고, `ensure_hw_paths`가 그 폴더를 sys.path 맨 앞에 넣어 PC에 따로 설치된 HW 패키지보다 먼저 쓴다. 옆에 HW 폴더가 없는 곳에 커밋될 파일만 복사해 테스트 270개가 모두 통과(HW3·HW4·모션·얼굴 모델 모두 복사본에서 불러옴)
 - **실기 확인 안 됨**: Pi 4 키오스크 설치(`install_pi.sh`, 터치 자체는 11/27 확인), 카드 슬롯 배선, 로봇 연결은 아직 실제 장비로 돌려 보지 않았다. 데스크톱에서 `tools/spike_connection.py`로 확인할 것: 카메라 + TTS + 모션 동시 동작, 라벨 지연(`[motion] label_delay_s`)과 효과음 경로, `[robot] screen_point`·`slot_point` 실측, 주의 방향 yaw·pitch 부호(`--calibrate`).
 
 ---
@@ -826,7 +829,7 @@ D-5(목)까지 S1이 안 끝나면 P2를 전부, P1 중 영어 모드를 뺍니�
 |---|---|---|
 | 일정 부족 (제안서의 최대 리스크) | D-5까지 S1 미완 | P0만 유지, 시나리오 우선 |
 | **공유 연결 통합 실패** (세 과제의 연결 방식이 다름) | 스파이크에서 카메라·오디오·모션 중 하나가 끊김 | Plan B: 모션은 HW4 연결(`no_media`) 그대로 + 카메라는 노트북 웹캠(HW2 인식 그대로) + 마이크는 USB 마이크 + 로봇 음성은 캐시된 TTS wav를 REST `play_sound`로 재생(85–165 ms; 바지인은 `stop_sound`) |
-| 데스크톱 운반·설치 (발표장) | 설치 지연, 네트워크·모니터 문제 | 11/26(목) 수업 시간에 강의실에서 설치 리허설, 설치 체크리스트 작성, 비상시 노트북 + `dev_laptop.toml`(CPU `small` ASR) + 터치 우선. 11/27 노트북(Core Ultra 7 155H, Intel Arc라 CUDA 없음) CPU 실측: large-v3-turbo는 말 한 번에 6–14 s라 못 씀, `small` int8 beam 5는 약 2.0 s(데스크톱 GPU 0.2–0.5 s의 4–10배). 현장 두뇌 PC는 데스크톱이나 NVIDIA 노트북 |
+| 데스크톱 운반·설치 (발표장) | 설치 지연, 네트워크·모니터 문제 | 11/26(목) 수업 시간에 강의실에서 설치 리허설, 설치 체크리스트 작성, 비상시 노트북 + `dev_laptop.toml`(CPU `small` ASR) + 터치 우선. 11/27 노트북(Core Ultra 7 155H, Intel Arc라 CUDA 없음) CPU 실측: large-v3-turbo는 말 한 번에 6–14 s라 못 씀, `small` int8 beam 5는 약 2.0 s(데스크톱 GPU 0.2–0.5 s의 4–10배). 데스크톱은 못 가져가므로(11/27) 1순위 연구실 NVIDIA 노트북, 2순위 원격 음성 인식(`asr = "remote"`, 데스크톱 GPU), 3순위 노트북 CPU `small` |
 | Wi-Fi 끊김·지연 | `StopPolicy` 중단, 영상 지연 300 ms 초과 | 전용 공유기 + 두뇌 PC 유선, `max_present_age_s` 0.5 s 이상 |
 | 강의실 네트워크·인터넷 | WebRTC 페어링 실패 | 11/27 SDK 코드로 확인: 같은 네트워크에서 붙을 때는 로봇 안의 시그널링 서버(`ws://<로봇 IP>:8443`)를 쓰고 STUN 서버도 쓰지 않는다. HF 중앙 시그널링은 인터넷 너머 원격 접속용. 그래서 인터넷 없는 전용 공유기(ipTIME)로 충분하고 휴대폰 핫스팟은 예비. 모델(Whisper·Supertonic)은 미리 받아 두고, 인터넷 없는 공유기에서 한 번 리허설(모델 확인이 늦어지면 `HF_HUB_OFFLINE=1`). 로봇 daemon 자체가 인터넷 없이 문제없는지는 리허설로 확인 |
 | 모션 사운드와 TTS 동시 재생 충돌 | 소리 끊김·누락 | 스파이크에서 확인, 겹치지 않게 순서화(모션 소리 → TTS) |

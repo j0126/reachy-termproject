@@ -1,0 +1,18 @@
+# Experiment override: the smaller Gemma 4 E2B (2.8 GB GGUF) on the local
+# llama.cpp server - fits next to Whisper large-v3-turbo fp16 on the 8 GB GPU
+# with more margin than E4B. Same setup as config/llm_local_gemma4.toml:
+#     python -m reachy_s2s.apps.llm_server --config config/llm_local_gemma4_e2b.toml
+
+[llm]
+provider = "openai_compat"
+model = "gemma-4-E2B-it-Q4_0"   # = [llm_server] alias
+base_url = "http://127.0.0.1:8080/v1"
+api_key_env = ""
+thinking_level = ""
+max_output_tokens = 512
+
+[llm_server]
+model_repo = "ggml-org/gemma-4-E2B-it-GGUF"
+model_file = "gemma-4-E2B-it-Q4_0.gguf"
+model_revision = "b4243c156154b6dca9324415f8c7ccc098b4aed1"
+alias = "gemma-4-E2B-it-Q4_0"

@@ -1,0 +1,100 @@
+# Reachy Mini HW4 motion 'boredom' (expressive) - schema reachy-motion/v1. Edit the values and reload.
+# Revision 1 (2026-11-11): candidate 'story' adopted and shortened from 10.6 s to 7.9 s (shorter keys and pauses,
+# same beats and poses). Previous version: motions/candidates/boredom_v0/; long story: motions/candidates/boredom_story/.
+# Signed-off design (draft: false): the student signed off revision 1 on 2026-11-11; revision 2 on 2026-11-14
+# adds the effect sound only - the movement is unchanged (docs/phase3/MOTION_REVISIONS.md).
+# Units: angles in degrees (*_deg), head translation in millimetres (*_mm), times in seconds (*_s).
+# Write plain decimal numbers (10, -2.5, 1.0e-3); 010, 0x0A, 1:30 and 1_000 are refused.
+# Each key moves its track from the previous value (or the start) in duration_s with its easing
+# (linear | minjerk | ease_in_out | cartoon), then pauses hold_s. Tracks head/antennas/body run in parallel.
+# Head pose values are absolute (relative to the neutral head pose, omitted component = 0), not deltas.
+# Antennas: absolute right_deg/left_deg; 'rest' = the SDK rest angle exactly (-0.1745/+0.1745 rad, i.e.
+# -9.998/+9.998 deg; -10/+10 deg is 0.0019 deg off). start: rest = neutral head, antennas at rest, body 0.
+# scale.amplitude scales every key about the start; scale.tempo divides every duration and hold.
+# expected valence/arousal are design targets, not measured results.
+schema: reachy-motion/v1
+name: boredom
+variant: expressive
+draft: false
+intent: 'Bored: looks around for something or someone, nothing happens, slumps into a resting posture, then comes back.'
+description: 'Three beats - look around, nothing, slump. Head settles slightly down with the antennas lowered, slowly
+  looks left, pauses, slowly looks right, pauses, then slumps deeper (nobody there) and holds before a slow return.
+  Antennas never perk; they sag during the sweep and drop further with the slump. Forethought (looking around in hope)
+  then reaction (the slump). Expected V -0.5: deflating ending; A -0.6: slow sweeps and pauses. 0.2 s longer than
+  neutral.'
+expected: {valence: -0.5, arousal: -0.6}
+principles:
+- principle: staging
+  how: three readable beats (look-left, look-right, slump), each followed by a still pause
+- principle: timing
+  how: slow sweeps (1.2 s, and 1.8 s for 50 deg) with 0.5 s pauses; the 0.9 s slump hold is the nothing-happened beat
+- principle: slow_in_slow_out
+  how: minjerk / ease_in_out on every key
+- principle: follow_through_and_overlapping_action
+  how: antennas sag during the sweep and drop further 0.3 s after the slump starts; they recover last
+- principle: exaggeration
+  how: the final slump (pitch 20 deg, z -12 mm) is deeper than the starting posture (pitch 8 deg, z -4 mm)
+scale: {amplitude: 1.0, tempo: 1.0}
+start: rest
+tracks:
+  head:
+  - label: settle
+    duration_s: 0.7
+    hold_s: 0.2
+    easing: ease_in_out
+    pose: {x_mm: 0.0, y_mm: 0.0, z_mm: -4.0, roll_deg: 0.0, pitch_deg: 8.0, yaw_deg: 0.0}
+  - label: look-left
+    duration_s: 1.2
+    hold_s: 0.5
+    easing: minjerk
+    pose: {x_mm: 0.0, y_mm: 0.0, z_mm: -4.0, roll_deg: 2.0, pitch_deg: 8.0, yaw_deg: 25.0}
+  - label: look-right
+    duration_s: 1.8
+    hold_s: 0.5
+    easing: minjerk
+    pose: {x_mm: 0.0, y_mm: 0.0, z_mm: -4.0, roll_deg: -2.0, pitch_deg: 8.0, yaw_deg: -25.0}
+  - label: slump
+    duration_s: 1.0
+    hold_s: 0.9
+    easing: ease_in_out
+    pose: {x_mm: 0.0, y_mm: 0.0, z_mm: -12.0, roll_deg: 5.0, pitch_deg: 20.0, yaw_deg: 0.0}
+  - label: back
+    duration_s: 1.1
+    hold_s: 0.0
+    easing: minjerk
+    pose: {x_mm: 0.0, y_mm: 0.0, z_mm: 0.0, roll_deg: 0.0, pitch_deg: 0.0, yaw_deg: 0.0}
+  antennas:
+  - label: wait
+    duration_s: 0.2
+    hold_s: 0.0
+    easing: minjerk
+    right_deg: rest
+    left_deg: rest
+  - label: lower
+    duration_s: 0.8
+    hold_s: 1.6
+    easing: ease_in_out
+    right_deg: -35.0
+    left_deg: 35.0
+  - label: sag
+    duration_s: 1.8
+    hold_s: 0.8
+    easing: ease_in_out
+    right_deg: -45.0
+    left_deg: 45.0
+  - label: droop
+    duration_s: 0.9
+    hold_s: 0.8
+    easing: ease_in_out
+    right_deg: -75.0
+    left_deg: 75.0
+  - label: recover
+    duration_s: 1.0
+    hold_s: 0.0
+    easing: minjerk
+    right_deg: rest
+    left_deg: rest
+  body: []
+sound:
+  file: boredom.wav
+  at_s: 4.9

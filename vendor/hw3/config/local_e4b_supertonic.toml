@@ -1,0 +1,31 @@
+# Phase 2 experiment configuration: the whole cascade runs on this PC, no API key.
+#   VAD Silero v6 -> ASR faster-whisper large-v3-turbo (CUDA) -> LLM Gemma 4 E4B (llama.cpp)
+#   -> TTS Supertonic 3 voice M1 (CPU) -> Reachy Mini speaker
+# Why not the spec's Gemini models (they stay the defaults in default.toml):
+#   on the free tier gemini-3.6-flash allowed 20 requests/day and gemini-3.8-flash-lite-tts
+#   10 requests/day (HTTP 429, 2026-10-16); gemini-3.8-flash returned 503. The user chose the
+#   local Gemma 4 E4B (measured: 0.32 s median, 18/18 facts) and Supertonic 3 (listening test:
+#   voice M1, level and pronunciation OK). See docs/PHASE2_REPORT.md section 4.1.
+# Start the LLM server first:
+#     python -m reachy_s2s.apps.llm_server --config config/local_e4b_supertonic.toml
+# then e.g.  python -m reachy_s2s.apps.dashboard --config config/local_e4b_supertonic.toml --auto-cascaded
+
+[llm]
+provider = "openai_compat"
+model = "gemma-4-E4B-it-Q4_0"   # = [llm_server] alias
+base_url = "http://127.0.0.1:8080/v1"
+api_key_env = ""
+thinking_level = ""             # thinking is off on the server (--reasoning off)
+max_output_tokens = 512
+
+[llm_server]
+model_repo = "ggml-org/gemma-4-E4B-it-GGUF"
+model_file = "gemma-4-E4B-it-Q4_0.gguf"
+model_revision = "b8093469224f83f5c38f691eb906c380e9e63114"
+alias = "gemma-4-E4B-it-Q4_0"
+
+[tts]
+provider = "supertonic"
+model = "supertonic-3"
+voice = "M1"                    # chosen by the user in the robot listening test (10 voices, loudness-matched)
+gain_db = 6.0                   # M1 raw speech ~ -25 dBFS RMS; +6 dB = the level judged right in that test

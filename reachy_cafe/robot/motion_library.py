@@ -1,6 +1,6 @@
 """HW4 모션 라이브러리 + 카페에서 더한 모션 (termproject/motions/).
 
-HW4 모션 네 개(aha_recommend, boredom, success, failure)는 ../reachy_hw4/motions/의 YAML을 그대로 쓰고,
+HW4 모션 네 개(aha_recommend, boredom, success, failure)는 vendor/hw4/motions/(HW4 원본에서 복사)의 YAML을 그대로 쓰고,
 카페가 더한 모션(greeting = 손님 인사)은 같은 형식(reachy-motion/v1)으로 이 프로젝트의 motions/ 폴더에 둔다.
 HW4 폴더는 고치지 않는다.
 

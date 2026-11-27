@@ -1,0 +1,104 @@
+# Reachy Mini HW4 motion 'boredom' (expressive) - schema reachy-motion/v1. Edit the values and reload.
+# CANDIDATE 'doze' - Phase 3 alternative to motions/boredom.*.yaml (that draft stays unchanged). Use it with
+#   --dir motions/candidates/boredom_doze   (sim-play, check, play, export, gui, sim-verify)
+# DRAFT: initial values for the student to design and tune; set draft: false once signed off.
+# Units: angles in degrees (*_deg), head translation in millimetres (*_mm), times in seconds (*_s).
+# Write plain decimal numbers (10, -2.5, 1.0e-3); 010, 0x0A, 1:30 and 1_000 are refused.
+# Each key moves its track from the previous value (or the start) in duration_s with its easing
+# (linear | minjerk | ease_in_out | cartoon), then pauses hold_s. Tracks head/antennas/body run in parallel.
+# Head pose values are absolute (relative to the neutral head pose, omitted component = 0), not deltas.
+# Antennas: absolute right_deg/left_deg; 'rest' = the SDK rest angle exactly (-0.1745/+0.1745 rad, i.e.
+# -9.998/+9.998 deg; -10/+10 deg is 0.0019 deg off). start: rest = neutral head, antennas at rest, body 0.
+# scale.amplitude scales every key about the start; scale.tempo divides every duration and hold.
+# expected valence/arousal are design targets, not measured results.
+schema: reachy-motion/v1
+name: boredom
+variant: expressive
+draft: true
+intent: 'Bored to sleep: the head slowly nods off, catches itself once, nods off deeper, then snaps awake.'
+description: 'Candidate doze. Head drifts down and sinks, catches itself (small jerk up), drifts down deeper while the
+  antennas sag to about 90 deg, then snaps awake (head up past rest, antennas flick upright) and settles back. Expected
+  V -0.3: sleepy rather than sad; A -0.7: long slow drift with one short startle. Risk: in a cafe this may read as the
+  robot switching off. 0.25 s longer than neutral.'
+expected: {valence: -0.3, arousal: -0.7}
+principles:
+- principle: timing
+  how: slow drifts (1.6 s, 2.0 s) against a fast 0.35 s snap-awake; the contrast carries the moment
+- principle: slow_in_slow_out
+  how: ease_in_out drifts, minjerk snap and settle
+- principle: squash_and_stretch
+  how: the head sinks while dozing (z -14 mm) and rises above rest on waking (z +3 mm)
+- principle: secondary_action
+  how: antennas flick up on the catch and perk upright on waking
+- principle: follow_through_and_overlapping_action
+  how: antennas sag after the head (start 0.3 s later) and settle last
+- principle: exaggeration
+  how: deep droop (pitch 22 deg, antennas about 90 deg) before the snap
+scale: {amplitude: 1.0, tempo: 1.0}
+start: rest
+tracks:
+  head:
+  - label: drift-down
+    duration_s: 1.6
+    hold_s: 0.3
+    easing: ease_in_out
+    pose: {x_mm: 0.0, y_mm: 0.0, z_mm: -6.0, roll_deg: 3.0, pitch_deg: 10.0, yaw_deg: 0.0}
+  - label: catch
+    duration_s: 0.4
+    hold_s: 0.2
+    easing: ease_in_out
+    pose: {x_mm: 0.0, y_mm: 0.0, z_mm: -3.0, roll_deg: 1.0, pitch_deg: 6.0, yaw_deg: 0.0}
+  - label: nod-off
+    duration_s: 2.0
+    hold_s: 0.8
+    easing: ease_in_out
+    pose: {x_mm: 0.0, y_mm: 0.0, z_mm: -14.0, roll_deg: 6.0, pitch_deg: 22.0, yaw_deg: 0.0}
+  - label: snap-awake
+    duration_s: 0.35
+    hold_s: 0.4
+    easing: minjerk
+    pose: {x_mm: 0.0, y_mm: 0.0, z_mm: 3.0, roll_deg: 0.0, pitch_deg: -6.0, yaw_deg: 0.0}
+  - label: settle
+    duration_s: 1.0
+    hold_s: 0.0
+    easing: minjerk
+    pose: {x_mm: 0.0, y_mm: 0.0, z_mm: 0.0, roll_deg: 0.0, pitch_deg: 0.0, yaw_deg: 0.0}
+  antennas:
+  - label: wait
+    duration_s: 0.3
+    hold_s: 0.0
+    easing: minjerk
+    right_deg: rest
+    left_deg: rest
+  - label: sag
+    duration_s: 1.6
+    hold_s: 0.0
+    easing: ease_in_out
+    right_deg: -45.0
+    left_deg: 45.0
+  - label: flick
+    duration_s: 0.3
+    hold_s: 0.3
+    easing: minjerk
+    right_deg: -35.0
+    left_deg: 35.0
+  - label: sag-deep
+    duration_s: 2.2
+    hold_s: 0.6
+    easing: ease_in_out
+    right_deg: -90.0
+    left_deg: 90.0
+  - label: perk
+    duration_s: 0.25
+    hold_s: 0.5
+    easing: minjerk
+    right_deg: 5.0
+    left_deg: -5.0
+  - label: settle
+    duration_s: 1.0
+    hold_s: 0.0
+    easing: minjerk
+    right_deg: rest
+    left_deg: rest
+  body: []
+sound: null

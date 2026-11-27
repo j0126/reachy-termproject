@@ -14,9 +14,9 @@ sleep_on_exit = false   # 끝낼 때 SDK goto_sleep (기본: REST 자세로만 �
 screen_point = [0.20, 0.22, -0.12]
 slot_point = [0.22, 0.20, -0.28]
 
-[hw]                    # HW 코드 위치 (pip install -e로 설치했으면 무시됨). 이 프로젝트 폴더 기준 상대 경로
-reachy_hw4 = "../reachy_hw4"
-hw3 = "../hw3/reachy-hw3-main"
+[hw]                    # HW 코드 위치 (이 프로젝트 폴더 기준 상대 경로). 기본은 저장소 안의 복사본 vendor/ (tools/vendor_hw.py)
+reachy_hw4 = "vendor/hw4"
+hw3 = "vendor/hw3"
 face_model = ["models/face_landmarker.task", "../../reachy-chamchamcham/models/face_landmarker.task",
               "../hw2/reachy-chamchamcham/models/face_landmarker.task"]
 
@@ -69,7 +69,12 @@ fps = 15.0                # 실제 카메라 얼굴 인식 처리 속도 (카메
 num_faces = 3             # AMBIGUOUS(여러 명) 판정을 위해 3명까지
 
 [speech]
-asr = "whisper"           # whisper | text  (text = 오퍼레이터 패널에서 발화를 텍스트로 주입)
+asr = "whisper"           # whisper | remote | text  (text = 오퍼레이터 패널에서 발화를 텍스트로 주입)
+# remote: 이 PC에 NVIDIA GPU가 없을 때 인식만 데스크톱 GPU에 맡긴다 (데스크톱에서 python -m reachy_cafe.asr_server)
+asr_url = ""              # 예: "http://10.8.139.133:8001"
+asr_timeout_s = 3.0       # 이 안에 답이 없으면 이번 발화는 아래 대비책으로
+asr_retry_s = 20.0        # 데스크톱이 안 되면 이 시간 동안은 바로 대비책을 쓰고 그 뒤 다시 시도
+asr_fallback = "small"    # 데스크톱이 안 될 때 이 PC CPU로 돌릴 Whisper 모델 (11/27 노트북 실측 약 2 s, "" = 대비책 없음)
 silence_timeout_ms = 800
 yesno_silence_timeout_ms = 500
 nlu_min_score = 80        # 메뉴 퍼지 매칭 최소 점수 (0-100)

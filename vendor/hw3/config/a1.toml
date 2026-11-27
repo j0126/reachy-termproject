@@ -1,0 +1,13 @@
+# Phase 4 A1 (Enhanced Cascaded) = A0 + barge-in + interrupted-answer history + cancel & merge.
+# Layer it on top of the system config (the later file wins):
+#   python -m reachy_s2s.apps.dashboard --config config/local_e4b_supertonic.toml --config config/a1.toml
+# Everything not set here stays as in A0 (VAD silence 800 ms, same engines, same prompt).
+[cascaded]
+variant = "A1"
+barge_in = true
+# defaults from default.toml, repeated here so the experiment file shows them:
+bargein_threshold = 0.6
+bargein_min_speech_ms = 400
+bargein_reset_silence_ms = 300
+interrupted_history = "heard_marked"   # user decision 2026-10-17
+merge_cancelled_input = true           # user decision 2026-10-17

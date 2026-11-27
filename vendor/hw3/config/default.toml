@@ -1,0 +1,226 @@
+# reachy_s2s default settings. Secrets never go here (use .env).
+# Per-experiment overrides: create e.g. config/noisy.toml with only the keys you
+# change and pass  --config config/noisy.toml  to any app.
+
+[robot]
+host = "192.168.0.15"           # env REACHY_HOST and --host override this
+port = 8000
+connection_mode = "network"     # "network" (Wireless) | "localhost_only" (Lite: daemon on this PC) | "auto"
+media_backend = "webrtc"        # "webrtc" (Wireless) | "default" (Lite -> LOCAL GStreamer audio)
+connect_timeout_s = 10.0
+
+[audio]
+# The Wireless robot sends 16 kHz stereo. On SDK 1.11.0 / XVF3800 fw 2.1.2 both
+# channels carry the same processed beam (AUDIO_MGR_OP_L = OP_R = (8, 0)).
+mic_channel = "left"            # "left" | "right" | "mean" -> mono view for mel / VAD / ASR
+ring_seconds = 60.0             # input history kept in memory (pre-roll, GUI)
+subscriber_queue_chunks = 500   # per-consumer queue; a stalled consumer drops oldest chunks
+first_input_timeout_s = 15.0    # open() fails if no mic audio arrives within this time
+playback_chunk_ms = 20          # size of each push to the robot
+playback_lead_ms = 200          # how far ahead of real time the player keeps the robot fed
+# ASSUMED (not measured) delay between pushing audio and hearing it (WebRTC:
+# daemon jitter buffer 300 ms + Opus + ALSA). Only feeds *_est timestamps,
+# which are always labelled as estimates. The robot mic cannot measure it
+# (its own output is removed by the XVF3800), see docs/IMPLEMENTATION_NOTES.md.
+output_latency_hint_ms = 400.0
+output_gain_db = 0.0            # fixed gain on ALL robot output (TTS); keep constant within an experiment
+gap_warn_ms = 80.0              # log audio.gap when two mic chunks arrive further apart than this
+
+[timing]
+# Windows: timed waits (Condition/Event/queue) wake on the 15.6 ms system tick
+# unless timeBeginPeriod(1) is requested; measured with apps.timing_check.
+high_resolution_timer = true
+
+[mel]
+n_fft = 512
+win_ms = 25.0
+hop_ms = 10.0
+n_mels = 80
+fmin_hz = 0.0
+fmax_hz = 8000.0
+floor_db = -120.0
+display_seconds = 6.0
+# Robot (processed beam, AGC on): quiet room ~ -100 dB median, speech peaks ~ -70..-45 dB
+display_db_min = -110.0
+display_db_max = -40.0
+
+[logging]
+results_dir = "results"         # relative to the project root unless absolute
+level = "INFO"
+resource_monitor = false        # system.resources events every 1 s: process / per-thread CPU (psutil). Phase 4.5+ measurements
+
+# ---------------------------------------------------------------- Phase 2
+[vad]
+# Silero VAD v6 (ONNX bundled with faster-whisper), 512-sample (32 ms) frames at 16 kHz.
+threshold = 0.5                 # speech probability that starts / continues speech
+neg_threshold = 0.35            # below this a frame counts as silence (hysteresis, Silero: threshold - 0.15)
+min_speech_ms = 250             # speech shorter than this (in total) is discarded
+silence_timeout_ms = 800        # endpoint after this much continuous silence (T3 pause-handling knob)
+min_pause_ms = 200              # silences shorter than this are not logged as pauses
+pre_roll_ms = 300               # audio kept before the detected speech start
+post_roll_ms = 150              # audio kept after the last speech frame
+max_utterance_s = 20.0          # force an endpoint for very long speech
+
+[asr]
+model = "large-v3-turbo"        # faster-whisper name or local CTranslate2 model directory
+device = "cuda"
+compute_type = "float16"        # e.g. "int8_float16" if VRAM / speed is a problem
+language = "ko"
+beam_size = 5
+initial_prompt = ""             # optional context to bias recognition (names, terms)
+hotwords = ""                   # optional space-separated hotwords
+warmup = true                   # run one dummy inference after loading (reported separately)
+
+[llm]
+provider = "gemini"             # "gemini" (Interactions API, GEMINI_API_KEY) | "openai_compat" (llama.cpp, Ollama, Groq, HF router, OpenAI)
+model = "gemini-3.8-flash"
+base_url = ""                   # openai_compat only, e.g. "http://127.0.0.1:8080/v1" (local llama-server)
+api_key_env = ""                # openai_compat only: env var that holds the key ("" = no key, local server)
+thinking_level = "low"          # gemini-3.8-flash: low | medium | high ("minimal" errors); "" = omit (Gemma 4). openai_compat: sent as reasoning_effort when set
+max_output_tokens = 2048        # generous: a small cap can truncate thinking ("incomplete" status)
+temperature = 1.0               # openai_compat only (Gemini 3.6+ ignores sampling parameters, so they are not sent); Gemma 4 card: 1.0
+timeout_s = 30.0                # live: successful answers took 2.7-21 s (explanations are slow)
+max_retries = 1                 # OUR retries, only for 5xx / network (+ timeouts if enabled); 429 never
+retry_on_timeout = false        # live: 2 x 30 s timeouts kept one turn PROCESSING for 61 s; fail fast instead
+warmup = true                   # one tiny request at load: first calls took 17-27 s (cold start), logged separately
+max_history_exchanges = 20      # oldest user/model exchanges are dropped beyond this
+system_prompt = """
+너는 Reachy Mini라는 작은 탁상용 로봇이다. 사용자와 한국어로 자연스럽게 대화한다.
+- 답은 음성으로 읽힌다. 1~3문장, 짧고 명확하게 말한다.
+- 항상 해요체 존댓말로 말한다.
+- 마크다운, 목록 기호, 이모지, 괄호 속 부연을 쓰지 않는다.
+- 사용자가 말한 이름, 숫자, 날짜, 시간은 들은 그대로 정확히 사용한다. 임의로 바꾸거나 반올림하지 않는다.
+- 사용자가 말을 고쳐 말하면 마지막으로 고친 내용을 따른다.
+- 잘 모르거나 알아듣지 못했으면 지어내지 말고 짧게 다시 물어본다.
+- 너의 몸: 바퀴와 팔은 없다. 머리를 기울이거나 돌릴 수 있고, 몸통을 좌우로 돌리고, 두 개의 안테나를 움직일 수 있다. 카메라, 마이크, 스피커가 있다.
+- 지금은 몸을 움직이는 기능이 꺼져 있다. 고개 끄덕이기처럼 몸을 움직여 달라는 부탁에만 아직 움직일 수 없다고 짧게 답한다.
+- 노래나 랩을 부탁하면 짧은 가사를 직접 말로 들려준다. 음악을 틀거나 인터넷을 검색할 수는 없다.
+"""
+
+[llm_server]
+# Local LLM server used when [llm] provider = "openai_compat" points at this PC
+# (python -m reachy_s2s.apps.llm_server). llama.cpp's official Windows build;
+# the GGUF comes from the Hugging Face cache (downloaded once, verified SHA256).
+exe = "%LOCALAPPDATA%/Programs/llama.cpp/b11680-cuda12.4/llama-server.exe"
+model_repo = "ggml-org/gemma-4-E4B-it-GGUF"
+model_file = "gemma-4-E4B-it-Q4_0.gguf"
+model_revision = "b8093469224f83f5c38f691eb906c380e9e63114"
+alias = "gemma-4-E4B-it-Q4_0"   # name the server reports; keep equal to [llm] model
+host = "127.0.0.1"
+port = 8080
+ctx_size = 8192                 # enough for system prompt + 20 short exchanges; larger costs VRAM
+n_gpu_layers = 99               # 99 = all layers on the GPU (lower it if VRAM runs out)
+parallel = 1                    # one conversation at a time
+# Gemma 4 card: temperature 1.0 (sent per request), top_p 0.95, top_k 64. Thinking off: every
+# thinking token is silence for the user. CORS limited to localhost pages so other web sites
+# open in a browser cannot use the server (flags checked against llama-server b11680 --help).
+extra_args = ["--jinja", "--top-p", "0.95", "--top-k", "64", "--flash-attn", "on", "--reasoning", "off",
+              "--cors-origins", "localhost", "--no-cors-credentials"]
+startup_timeout_s = 180.0
+
+[tts]
+provider = "gemini"             # "gemini" (Interactions API, GEMINI_API_KEY) | "supertonic" (local Supertonic 3, CPU)
+model = "gemini-3.8-flash-lite-tts"   # supertonic: "supertonic-3" (files pinned by the supertonic package)
+voice = "Kore"                  # gemini: prebuilt voice name; supertonic: M1-M5 / F1-F5
+sample_rate = 24000             # gemini: requested WAV rate (supertonic: always 44.1 kHz); the player resamples to 16 kHz
+style = ""                      # gemini only: optional speech_metadata style annotation, e.g. "friendly"
+timeout_s = 30.0                # gemini only
+max_retries = 1                 # gemini only: 5xx / network (+ timeouts if enabled); 429 is never retried
+retry_on_timeout = false        # gemini only
+# --- supertonic only
+lang = "ko"
+speed = 1.05                    # package default
+total_steps = 8                 # package default; fewer = faster, lower quality
+gain_db = 0.0                   # fixed gain on the synthesized audio (keep constant within an experiment)
+threads = 0                     # ONNX Runtime intra-op threads, 0 = runtime default
+normalize_numbers = true        # "16명" -> "열여섯 명" before synthesis (engines/ko_tts_text.py); logs keep the original
+pronunciations = [["Reachy Mini", "리치 미니"]]   # [written, spoken] replaced before synthesis
+
+[cascaded]
+error_tone = true               # short local beep when a turn fails (no API needed)
+save_turn_audio = true          # audio/turn_NNNN_user.wav and _robot.wav
+variant = "A0"                  # label in every turn row / session: "A0" = Phase 2 baseline, "A1" = enhanced (Phase 4)
+# --- Phase 4 (A1). All off by default: A0 ignores speech that starts while it is busy.
+barge_in = false                # user speech while the robot speaks or prepares an answer interrupts it
+bargein_threshold = 0.6         # VAD probability counted as interrupting speech (stricter than [vad] threshold)
+bargein_min_speech_ms = 400     # active speech needed to confirm an interruption (HF speech-to-speech: 384 ms)
+bargein_reset_silence_ms = 300  # this much silence resets the count (short noises do not add up)
+interrupted_history = "heard_marked"   # interrupted answer in the LLM history: heard_marked | drop | full_marked
+merge_cancelled_input = true    # speech while an answer is being prepared: cancel it, join both utterances into one turn
+premature_window_ms = 1000      # speech starting this soon after an endpoint marks a suspected premature endpoint
+
+# ---------------------------------------------------------------- Phase 3
+[cloud]
+# System B: Gemini Live (native-audio speech-to-speech over one WebSocket session). Uses the same
+# system prompt as the cascade ([llm] system_prompt) and GEMINI_API_KEY. Facts: docs/PHASE3_PLAN.md.
+variant = "B"                   # label in every cloud turn row / session
+model = "gemini-3.8-live"       # in this key's models.list (bidiGenerateContent) and the Live guide (2026-10-17)
+voice = "Puck"                  # chosen by the user in a robot listening test (Puck / Charon / Achird), male like System A's M1
+silence_duration_ms = 800       # server VAD end-of-speech silence = the cascade's [vad] silence_timeout_ms
+prefix_padding_ms = 0           # 0 = server default
+start_sensitivity = ""          # "" = server default | "high" | "low"
+end_sensitivity = ""            # "" = server default | "high" | "low"
+activity_handling = "interrupts"   # "interrupts" (user speech cuts the response = barge-in) | "no_interruption"
+uplink_while_speaking = "stream"   # "stream" = full duplex | "pause" = no mic upload while the robot speaks
+uplink_chunk_ms = 40            # mic audio is sent in blocks of this length (16 kHz 16-bit PCM)
+uplink_queue_ms = 2000          # at most this much audio waits for the network; older blocks are dropped (logged)
+input_transcription = true      # user transcript from the server
+output_transcription = true     # robot transcript from the server
+session_resumption = true       # reconnect after GoAway / network loss keeps the context (handles valid 2 h)
+context_compression = true      # sliding window, so sessions may exceed the 15 min audio limit
+connect_timeout_s = 15.0
+reconnect_attempts = 3          # consecutive failed connects before giving up (state ERROR)
+reconnect_backoff_s = 1.0       # wait before reconnecting (x attempt number)
+response_timeout_s = 15.0       # local speech end without any response -> "no_response", back to LISTENING
+network_probe = true            # HTTPS round trip to the API host at each connect (not a model request)
+save_turn_audio = true          # audio/turn_NNNN_user.wav (local VAD segment) and _robot.wav (received audio)
+
+# ---------------------------------------------------------------- Phase 4.5
+[motion]
+# State-based expressive motion (docs/PHASE4_5_DESIGN.md). One MotionController streams set_target();
+# nothing here moves the robot until the user turns the motors on in the dashboard (Motor ON).
+enabled = false                 # Motion ON when the motors are on; false = Motion OFF = hold the neutral pose (torque on)
+auto_enable_motors = false      # true = Motor ON right after connecting, without a dialog, when it is safe
+                                # (motors off, head near the sleep / neutral pose, joint guard loaded; otherwise
+                                # voice only). Used by config/demo.toml after the R1-R3 robot checks (2026-10-17)
+sink = "robot"                  # robot | dry_run (log the commands, never send them)
+intensity = 1.0                 # amplitude scale of every motion; 1.0 = design values (nod 3 deg, speech 25 % of SDK)
+speaking_motion = "custom"      # custom (PCM envelope, our limits) | sdk (daemon wobbling, comparison only) | off
+allow_sdk_wobble = false        # sdk wobbling bypasses our limits: needs explicit approval for robot tests
+speech_gain = 0.25              # custom speaking motion amplitude as a fraction of the SDK SwayRollRT amplitude
+speech_sync_offset_ms = 0.0     # added to the estimated audible time (push + [audio] output_latency_hint_ms); tune on the robot
+antenna_beat_rad = 0.08         # antenna raise at full speech envelope (intensity 1.0)
+speech_started_gesture = "nod"  # nod | antenna | off (reaction when the user starts speaking while LISTENING)
+nod_deg = 3.0                   # nod depth at intensity 1.0
+rate_hz = 50.0                  # control loop; the daemon applies targets at 50 Hz without smoothing (25 for comparison)
+deadband_deg = 0.05             # do not resend a target that moved less than this (and the mm / rad values below)
+deadband_mm = 0.05
+deadband_rad = 0.003
+keepalive_s = 1.0               # resend an unchanged target this often
+startup_ramp_s = 3.0            # minimum ramp present pose -> neutral (longer if the distance needs it)
+shutdown_ramp_s = 3.0           # minimum ramp neutral -> sleep pose
+# conversation-motion box (deviation from neutral; ramps to / from the sleep pose are checked separately)
+max_pitch_deg = 10.0
+max_roll_deg = 8.0
+max_yaw_deg = 20.0
+max_offset_mm = 3.0
+max_antenna_rad = 0.8           # absolute antenna angle (HW2 used up to 0.55)
+# speed / acceleration caps on every command (the last safety net; planned motions stay below them)
+max_head_speed_dps = 40.0
+max_head_accel_dps2 = 400.0
+max_linear_speed_mms = 15.0
+max_linear_accel_mms2 = 150.0
+max_antenna_speed_rps = 1.5
+max_antenna_accel_rps2 = 10.0
+# joint guard: PC inverse kinematics (SDK Rust solver, ~4 us) on every command
+joint_guard = true
+joint_max_change_deg = 12.0     # per Stewart joint, from the neutral pose (SDK speech wobbler maximum: 11.4)
+joint_limit_margin_deg = 10.0   # inside the motor position limits of the SDK hardware_config.yaml
+pose_tolerance_deg = 8.0        # initial / final pose checks (near the sleep or neutral pose)
+pose_tolerance_mm = 8.0
+log_commands = true             # motion.csv in the session folder (every command sent)
+lock_during_conversation = true  # experiments: the motion condition is fixed while a conversation runs
+                                # (demo.toml: false, Motion ON/OFF can be toggled during the demo)
+thread_priority = "normal"      # motion thread (Windows): normal | above_normal | below_normal. It needs ~2 % of one
+                                # core. With [tts] threads = 0 the local TTS saturates every core and the thread drops to
+                                # ~33 Hz whatever its priority (TTS threads 2-4: 49 Hz); see docs/PHASE4_5_REPORT.md

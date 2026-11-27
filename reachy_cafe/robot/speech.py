@@ -404,6 +404,16 @@ class KioskSpeech:
     def _make_asr(self) -> Any:
         from reachy_s2s.engines.asr import WhisperASR
 
+        sp = self.cfg["speech"]
+        if sp.get("asr") == "remote":
+            # 현장 PC에 GPU가 없을 때: 인식은 데스크톱 GPU(reachy_cafe.asr_server)에, 안 되면 이 PC CPU의 작은 모델로
+            from .remote_asr import RemoteASR
+
+            fallback_model = sp.get("asr_fallback", "small")
+            fallback = WhisperASR(replace(cpu_asr(self.hw3.asr), model=fallback_model)) if fallback_model else None
+            return RemoteASR(replace(self.hw3.asr, device="remote"), str(sp.get("asr_url", "")),
+                             timeout_s=float(sp.get("asr_timeout_s", 3.0)), retry_s=float(sp.get("asr_retry_s", 20.0)),
+                             fallback=fallback)
         return WhisperASR(self.hw3.asr)
 
     def _load_asr(self) -> dict[str, Any]:
@@ -433,7 +443,8 @@ class KioskSpeech:
             info = self._load_asr()
             self.ready["asr"] = True
             self.bus.log_threadsafe("speech.asr_ready", load_s=round(time.perf_counter() - t0, 1),
-                                    **{k: v for k, v in (info or {}).items() if k in ("model", "device", "compute_type")})
+                                    **{k: v for k, v in (info or {}).items()
+                                       if k in ("model", "device", "compute_type", "fallback")})
         except Exception as exc:  # noqa: BLE001
             self.bus.log_threadsafe("error", where="asr_load", error=f"{type(exc).__name__}: {exc}")
         while not self._stop.is_set():
@@ -467,6 +478,12 @@ class KioskSpeech:
         nsp = result.no_speech_prob
         detail = {"speech_s": round(utt.speech_duration_s, 2), "asr_ms": round(asr_ms),
                   "no_speech_prob": None if nsp is None else round(float(nsp), 3), "lang": lang}
+        source = getattr(self.asr, "last_source", None)  # 원격 인식: "remote" | "fallback"(데스크톱이 안 돼 이 PC CPU로)
+        if source:
+            detail["asr"] = source
+        remote_error = getattr(self.asr, "last_error", None)
+        if remote_error:
+            self.bus.log_threadsafe("error", where="asr_remote", error=remote_error, fallback=source)
         reason = None
         if not text:
             reason = "empty"

@@ -1,0 +1,11 @@
+# Team demo / everyday use (after the Phase 4.5 robot checks R1-R3, user decision 2026-10-17).
+# Motion ON; the motors start by themselves after connecting when it is safe (motors off, head near the sleep or
+# neutral pose, joint guard loaded; otherwise voice only), and closing the window or disconnecting always runs the
+# normal shutdown first (sleep pose -> torque off). Layer it after the system config (run_dashboard.bat does this):
+#   python -m reachy_s2s.apps.dashboard --config config/local_e4b_supertonic.toml --config config/tts_threads2.toml --config config/demo.toml
+# Phase 5 measurements do NOT use this file: they run with the motors off (run_phase5.bat).
+[motion]
+enabled = true                   # Motion ON: state motions + speaking motion
+auto_enable_motors = true        # Motor ON right after connecting, without a dialog, only when it is safe
+intensity = 1.5                  # chosen in the robot checks R2/R3 (1.0 looked too small); the controller maximum
+lock_during_conversation = false # Motion ON/OFF and intensity can be changed during the demo

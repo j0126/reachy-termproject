@@ -18,7 +18,7 @@ from reachy_cafe.robot.hwpaths import ensure_hw_paths
 
 np = pytest.importorskip("numpy")
 CFG = load_config(env={})
-ensure_hw_paths(CFG)  # HW3 폴더(../hw3/reachy-hw3-main)가 없으면 아래에서 건너뜀
+ensure_hw_paths(CFG)  # HW3 코드(vendor/hw3)를 못 찾으면 아래에서 건너뜀
 pytest.importorskip("reachy_s2s")
 pytest.importorskip("soxr")
 

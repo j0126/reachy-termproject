@@ -1,11 +1,10 @@
-"""데스크톱으로 옮길 묶음을 OS별로 만든다: 키오스크 코드 + 필요한 HW3·HW4 코드 + HW2 얼굴 모델 + 그 OS의 시작 스크립트.
+"""git 없이 옮길 묶음을 OS별로 만든다: 키오스크 코드 + HW3·HW4 코드 + HW2 얼굴 모델 + 그 OS의 시작 스크립트.
 
-압축을 풀면 config [hw]의 상대 경로가 그대로 맞는 배치가 된다 (HW 폴더는 읽기만 하고 수정하지 않는다).
+11/27부터 HW 코드는 저장소 안의 vendor/에 들어 있어(tools/vendor_hw.py) git clone 하나로도 실행된다. 이 묶음은
+git을 쓸 수 없을 때를 위한 것이다. config [hw]가 저장소 밖의 HW 폴더를 가리킬 때만 그 폴더를 따로 넣는다.
 
   ReachyCafe/
-    termproject/            키오스크 (models/face_landmarker.task, start_<os> 스크립트 포함)
-    reachy_hw4/             HW4: reachy_motion/, motions/ (YAML + 효과음)
-    hw3/reachy-hw3-main/    HW3: reachy_s2s/, config/
+    termproject/            키오스크 (vendor/hw3·vendor/hw4, models/face_landmarker.task, start_<os> 스크립트 포함)
     README_<os>.txt
 
   windows → reachy_cafe_windows_<날짜>.zip      (start_windows.bat, 줄바꿈 CRLF)
@@ -130,6 +129,8 @@ def collect(target_os: str, with_hw: bool = True) -> tuple[list[tuple[str, bytes
     if with_hw:
         for key, rel_name in (("reachy_hw4", "reachy_hw4"), ("hw3", "hw3/reachy-hw3-main")):
             folder = _resolve(cfg["hw"][key])
+            if folder.is_relative_to(ROOT):  # vendor/ 복사본: 위에서 termproject와 함께 이미 들어감
+                continue
             for part in HW_PARTS[rel_name]:
                 src = folder / part
                 if src.exists():

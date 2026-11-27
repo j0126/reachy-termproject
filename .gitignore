@@ -6,6 +6,8 @@ __pycache__/
 logs/
 state/
 models/*.task
+# HW2 얼굴 모델은 저장소에 넣는다 (git clone 하나로 실행, tools/vendor_hw.py)
+!models/face_landmarker.task
 assets/tts_cache/
 .env
 pi_agent/kiosk.env

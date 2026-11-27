@@ -73,13 +73,15 @@ OS별로 다른 점:
 - **Linux**: GStreamer 1.22+와 Rust webrtc 플러그인을 직접 설치합니다: `./scripts/linux_gstreamer_webrtc.sh` ([Seeed Studio 안내](https://wiki.seeedstudio.com/reachymini_sdk_gstreamer-installation/)와 같은 순서)
 - GPU가 없거나 GPU 음성 인식 로딩이 실패하면 자동으로 CPU로 돌립니다 (느리면 `[speech] asr_model = "small"`)
 
-데스크톱으로 옮길 묶음(키오스크 + 필요한 HW3·HW4 코드 + HW2 얼굴 모델 + 그 OS의 시작 스크립트, 가상환경·로그·비밀 파일 제외)은 노트북에서 OS별로 만듭니다 (`dist/`에 `reachy_cafe_windows_*.zip`, `reachy_cafe_mac_*.zip`, `reachy_cafe_linux_*.tar.gz`).
+**코드는 git으로 받습니다.** 키오스크가 쓰는 HW3·HW4 코드와 HW2 얼굴 모델이 저장소 안(`vendor/`, `models/`)에 들어 있어 HW 폴더를 따로 둘 필요가 없습니다.
 
 ```powershell
-.venv\Scripts\python -X utf8 tools\make_bundle.py
+git clone https://github.com/j0126/reachy-termproject.git termproject
 ```
 
-묶음을 풀면 `termproject`, `reachy_hw4`, `hw3/reachy-hw3-main`이 나란히 놓입니다 (다르면 `config/default.toml`의 `[hw]` 경로를 고칩니다. HW 폴더는 수정하지 않고 읽기만 합니다).
+- `vendor/hw3`(HW3 `reachy_s2s` + 설정), `vendor/hw4`(HW4 `reachy_motion` + 모션 YAML·효과음), `models/face_landmarker.task`(HW2)는 원본 HW 폴더에서 `tools/vendor_hw.py`로 복사한 것입니다. 여기서 고치지 말고, 원본을 고친 뒤 다시 복사합니다. 앱은 시작할 때 `config/default.toml`의 `[hw]` 폴더(기본 `vendor/`)를 먼저 불러오므로 PC에 따로 설치된 HW 패키지와 섞이지 않습니다.
+- git을 쓸 수 없으면 노트북에서 OS별 묶음을 만듭니다: `.venv\Scripts\python -X utf8 tools\make_bundle.py` (`dist/`에 zip·tar.gz)
+- **NVIDIA GPU가 없는 PC에서 실행할 때**: 음성 인식만 데스크톱 GPU에 맡길 수 있습니다. 데스크톱에서 `.venv\Scripts\python -m reachy_cafe.asr_server`(포트 8001)를 띄우고, 현장 PC의 `config`에 `[speech] asr = "remote"`, `asr_url = "http://<데스크톱 IP>:8001"`을 둡니다. 데스크톱이 응답하지 않으면 현장 PC CPU의 `small`(약 2초)로 넘어갑니다(`asr_fallback`). 11/27 실측으로 GPU 없는 노트북 CPU는 large-v3-turbo가 말 한 번에 6–14초라 그대로는 못 씁니다.
 
 - 로봇 IP는 `config/default.toml`의 `[robot] host` (기본 `192.168.0.15`). 핫스팟으로 바꿀 때는 이 값만 바꾸거나 `--robot-host`, `REACHY_HOST`를 씁니다.
 - 처음 실행할 때 Whisper(large-v3-turbo)와 Supertonic 모델을 내려받습니다 (HW3를 돌린 PC면 캐시에 이미 있음). 고정 문장 TTS는 `assets/tts_cache`에 미리 합성해 둡니다.
@@ -113,6 +115,9 @@ MuJoCo 시뮬 daemon을 127.0.0.1에 띄워 실제 SDK 경로(명령 전송·상
 | `reachy_cafe/behavior/` | Act 정의, 채널별 타이밍(`manager.py`), 모션 시간표(`motion_catalog.py`), mock 로봇, 로봇 인터페이스 |
 | `reachy_cafe/robot/` | 실제 로봇: 공유 연결(`connection.py`), 모션·시선(`motion.py`, HW4 MotionService 확장), 모션 라이브러리(`motion_library.py`, HW4 모션 + 카페 모션), 음성(`speech.py`, HW3 VAD·Whisper·Supertonic), 카메라(`vision.py`, HW2 FaceLandmarker 확장), 묶음(`real.py`) |
 | `motions/` | 카페에서 더한 모션 (HW4 YAML 형식): `greeting` 손님 인사 (expressive·neutral, 초안 `draft: true`) |
+| `vendor/` | HW 코드 복사본: `hw3/`(HW3 `reachy_s2s` + 설정), `hw4/`(HW4 `reachy_motion` + 모션 YAML·효과음). `tools/vendor_hw.py`로 원본에서 복사 |
+| `models/` | HW2 얼굴 모델 `face_landmarker.task` (MediaPipe) |
+| `reachy_cafe/asr_server.py` | 음성 인식 서버: GPU 없는 현장 PC가 `asr = "remote"`로 데스크톱 GPU에 인식을 맡길 때 데스크톱에서 실행 |
 | `tools/` | 데스크톱 사전 점검(`preflight.py`), 실제 로봇 연결 점검·배치 보정(`spike_connection.py`), MuJoCo 시뮬 점검(`sim_check.py`), 인사 모션 시뮬 영상(`greeting_video.py`, HW4 가상환경으로 실행), 데스크톱 묶음(`make_bundle.py`), 평가 로그 집계(`analyze_logs.py`) |
 | `results/` | 만든 결과물: 인사 모션 시뮬 영상(`videos/`), 화면 캡처(`gui/`). 데스크톱 묶음에는 넣지 않음 |
 | `reachy_cafe/kiosk_server/` | FastAPI + WebSocket (`/ws/ui`, `/ws/device`, `/ws/operator`) |
@@ -121,7 +126,7 @@ MuJoCo 시뮬 daemon을 127.0.0.1에 띄워 실제 SDK 경로(명령 전송·상
 | `config/` | `default.toml`(데스크톱·로봇 기준), `dev_laptop.toml`(mock), `sim.toml`(MuJoCo 시뮬 로봇), `menu.json`, `calibration.toml`(데스크톱에서 잰 보정 값, 생기면) |
 | `start_windows.bat`, `start_mac.command`, `start_linux.sh` | OS별 시작 스크립트 (메뉴 / 명령: setup preflight spike calibrate kiosk mock sim test) |
 | `scripts/` | 리눅스 GStreamer webrtc 플러그인 준비(`linux_gstreamer_webrtc.sh`) |
-| `tests/` | NLU·추천·문장·사람 상태·FSM 시나리오(S1–S3, 실패 F1–F7)·자연스러움과 직원 안내(`test_naturalness.py`)·행동 타이밍·인사 모션(`test_greeting.py`)·앱 라우팅(`test_app.py`)·화면 파일 캐시(`test_server.py`)·로봇 연결 순서(`test_connection.py`)·평가 집계 테스트 |
+| `tests/` | NLU·추천·문장·사람 상태·FSM 시나리오(S1–S3, 실패 F1–F7)·자연스러움과 직원 안내(`test_naturalness.py`)·행동 타이밍·인사 모션(`test_greeting.py`)·앱 라우팅(`test_app.py`)·화면 파일 캐시(`test_server.py`)·원격 음성 인식과 CPU 대비책(`test_remote_asr.py`)·로봇 연결 순서(`test_connection.py`)·평가 집계 테스트 |
 | `logs/` | 실행마다 `events.jsonl` (보고서 수치와 실패 분석용) |
 
 ## 평가 (참가자 10명)

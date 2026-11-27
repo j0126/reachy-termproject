@@ -30,7 +30,7 @@
 | 지원 | Windows 10/11 64비트 | **Apple Silicon(M1 이상) + macOS 14 이상** | **Ubuntu 24.04** x86_64 권장 (22.04는 GStreamer PPA 필요) |
 | 음성 인식(Whisper) | NVIDIA GPU면 GPU, 없으면 CPU | CPU (CUDA 없음) | NVIDIA GPU면 GPU, 없으면 CPU |
 | GStreamer (로봇 카메라·마이크) | pip에 포함 | pip에 포함 | **직접 설치** (아래 'Linux 추가 준비') |
-| 묶음 | `reachy_cafe_windows_*.zip` | `reachy_cafe_mac_*.zip` | `reachy_cafe_linux_*.tar.gz` |
+| 코드 받기 | `git clone` (권장) 또는 `reachy_cafe_windows_*.zip` | `git clone` 또는 `reachy_cafe_mac_*.zip` | `git clone` 또는 `reachy_cafe_linux_*.tar.gz` |
 
 - Intel 맥과 macOS 13 이하는 안 된다: mediapipe 1.0.1·onnxruntime 1.27.0에 해당 패키지가 없다 (uv로 확인).
 - 음성 인식은 GPU가 없으면 자동으로 CPU(int8)로 돈다. 사전 점검이 인식 시간을 재 주니, 느리면(2초 이상) `config/default.toml`의 `[speech] asr_model = "small"`.
@@ -38,15 +38,17 @@
 - 배치: 손님 기준 **로봇이 화면 왼쪽** (로봇 기준 화면이 왼쪽). 화면 가운데가 로봇 정면에서 **40° 안쪽**이면 시선이 끝까지 간다
 - (선택) Pi 4 + Touch Display 2, 카드 슬롯: 없으면 오퍼레이터 패널의 화면·카드 버튼으로 대신한다
 
-묶음은 노트북에서 만든다 (`dist/`에 세 OS 묶음이 생김):
+코드는 git으로 받는다. HW3·HW4 코드와 HW2 얼굴 모델이 저장소 안(`vendor/`, `models/`)에 들어 있어 이것만 받으면 된다:
 
 ```powershell
-.venv\Scripts\python -X utf8 tools\make_bundle.py
+git clone https://github.com/j0126/reachy-termproject.git termproject
 ```
+
+git을 쓸 수 없으면 노트북에서 묶음을 만든다: `.venv\Scripts\python -X utf8 tools\make_bundle.py` (`dist/`에 세 OS 묶음이 생김)
 
 ## 1. 설치 (처음 한 번)
 
-묶음을 **새 폴더**에 푼다. 기존 HW3 폴더에 덮어쓰지 않는다. 풀면 `ReachyCafe/` 안에 `termproject`, `reachy_hw4`, `hw3/reachy-hw3-main`이 나란히 있다.
+받은 `termproject` 폴더에서 설치한다. 기존 HW3 폴더 안에 받거나 덮어쓰지 않는다. 아래 예시는 `C:\ReachyCafe\termproject`에 받은 경우다.
 
 **Windows** (PowerShell):
 

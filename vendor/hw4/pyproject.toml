@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "reachy-motion"
+version = "0.1.0"
+description = "Expressive motion library, executor, safety checker and telemetry for Reachy Mini (DGIST HRI HW4; reused by the Reachy Cafe term project)"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    # Must match the robot daemon. HW3 checked daemon 1.11.0 on the real robot (reachy_hw3/pyproject.toml).
+    # Do NOT upgrade: all Phase 1 source references are to this exact version.
+    "reachy-mini==1.11.0",
+    # reachy-mini 1.11.0 itself only requires >=; pin the compiled extensions the analysis was done with.
+    "reachy-mini-rust-kinematics==1.0.3",
+    "reachy-mini-motor-controller==1.5.6",
+    "numpy>=2.2.5",
+]
+# Full environment lock (all transitive versions, offline-installable from the uv cache): constraints.txt
+
+[project.optional-dependencies]
+# Same pin as reachy-mini[mujoco] 1.11.0 (METADATA: Requires-Dist mujoco==3.3.0; extra == "mujoco").
+sim = ["mujoco==3.3.0"]
+# Figures for the report (Phase 1 graphs). 3.11.2 is the version installed and verified.
+analysis = ["matplotlib>=3.9"]
+# Motion Editor GUI (Phase 2). Same version HW3 used; installed offline from the local uv cache.
+gui = ["pyside6-essentials==6.12.0", "matplotlib>=3.9"]
+
+[project.scripts]
+reachy-motion = "reachy_motion.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["reachy_motion*"]

@@ -1,0 +1,4 @@
+# Phase 4.5 / 5: start the dashboard with Motion ON preselected (the motors still need Motor ON).
+# The condition of every turn is recorded in turns.csv (column "motion", e.g. on:1:custom:nod / hold / torque_off).
+[motion]
+enabled = true

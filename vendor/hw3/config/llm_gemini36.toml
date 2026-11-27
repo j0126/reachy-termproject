@@ -1,0 +1,7 @@
+# Experiment override: temporary LLM substitution (use with --config config/llm_gemini36.toml).
+# Why: on 2026-10-16 the specified gemini-3.8-flash answered HTTP 503 "high demand" on the
+# free tier for almost every request (results/llm_probe.csv: 0/4 round-robin, 2/16 that day),
+# while gemini-3.6-flash succeeded 4/4 (median 3.5 s). Chosen by the user; the default
+# config (gemini-3.8-flash) is unchanged and should be restored once it is available again.
+[llm]
+model = "gemini-3.6-flash"

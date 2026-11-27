@@ -1,6 +1,6 @@
 """모션의 길이와 head 트랙 키프레임 라벨의 시작 시각 (변형별).
 
-YAML의 head 트랙에서 duration_s + hold_s를 누적해 계산한 값이다. HW4 모션 네 개는 reachy_hw4/motions/,
+YAML의 head 트랙에서 duration_s + hold_s를 누적해 계산한 값이다. HW4 모션 네 개는 vendor/hw4/motions/,
 카페에서 더한 greeting(손님 인사)은 termproject/motions/에 있다. mock 로봇과 BehaviorManager가 쓰고,
 실제 로봇에서는 MotionPlayer(HW4 MotionService 포크)가 YAML에서 직접 라벨 이벤트를 낸다.
 tests/test_greeting.py가 이 표를 YAML과 비교한다 (YAML을 고치면 여기도 고칠 것).
